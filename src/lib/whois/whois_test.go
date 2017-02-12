@@ -15,11 +15,11 @@
 package whois
 
 import (
+	"github.com/kylelemons/godebug/pretty"
 	"io/ioutil"
 	"path"
-	"testing"
-	"github.com/kylelemons/godebug/pretty"
 	"strings"
+	"testing"
 )
 
 func TestParseWhois(t *testing.T) {
@@ -54,7 +54,7 @@ func TestParseWhois(t *testing.T) {
 func TestCleanupWhois(t *testing.T) {
 	data := []struct {
 		input string
-		want string
+		want  string
 	}{
 		{input: "whois-1.txt", want: "whois-1.txt"},
 		{input: "whois-2.txt", want: "whois-2.txt"},

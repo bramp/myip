@@ -65,15 +65,15 @@ func parseWhois(response string) (map[string]string, error) {
 func longestCommonString(lines []string) (int, int) {
 
 	// Matrix to keep track of the longest match found starting on each line
-	var m = make([][]int, 1 + len(lines))
+	var m = make([][]int, 1+len(lines))
 	for i := 0; i < len(m); i++ {
-		m[i] = make([]int, 1 + len(lines))
+		m[i] = make([]int, 1+len(lines))
 	}
 
 	longest := 0
 	y_longest := 0
-	for x := 1; x < 1 + len(lines); x++ {
-		for y := x + 1; y < 1 + len(lines); y++ {
+	for x := 1; x < 1+len(lines); x++ {
+		for y := x + 1; y < 1+len(lines); y++ {
 			if lines[x-1] == lines[y-1] {
 				m[x][y] = m[x-1][y-1] + 1
 				if m[x][y] > longest {
@@ -106,7 +106,7 @@ func cleanupWhois(response string) string {
 		start, end := longestCommonString(lines)
 
 		// Only delete if there is multiple lines of dup
-		if end - start > 3 {
+		if end-start > 3 {
 			response = ""
 			for i, line := range lines {
 				if i < start || i > end {
@@ -126,7 +126,7 @@ func Handle(ctx context.Context, ipAddr string) *Response {
 	body, err := client.QueryIpWhois(ipAddr)
 	resp := &Response{
 		Query: ipAddr,
-		Body:  strings.TrimSpace(body),
+		Body:  cleanupWhois(body),
 	}
 	if err != nil {
 		resp.Error = err.Error()

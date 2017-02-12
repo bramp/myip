@@ -25,6 +25,7 @@ import (
 
 	"text/template"
 
+	"bytes"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/ua-parser/uap-go/uaparser"
@@ -32,7 +33,6 @@ import (
 	"lib/dns"
 	"lib/location"
 	"lib/whois"
-	"bytes"
 )
 
 var debugConfig = &conf.Config{
@@ -133,7 +133,7 @@ func healthCheckHandler(w http.ResponseWriter, _ *http.Request) {
 	fmt.Fprint(w, "ok")
 }
 
-var configTemplate =  `
+var configTemplate = `
 var MAIN_HOST = "{{.Host}}";
 
 var SERVERS = {
