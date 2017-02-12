@@ -1,0 +1,4 @@
+node_modules/
+static/bower_components/
+vendor
+regexes.yaml

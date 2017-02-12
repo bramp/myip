@@ -1,0 +1,14 @@
+{
+  "name": "myip",
+  "version": "1.0.0",
+  "description": "A better what's my IP Address",
+  "repository": "https://github.com/bramp/myip",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "bower": "^1.7.7",
+    "npm-check-updates": "2.10.2"
+  },
+  "scripts": {
+    "postinstall": "bower install"
+  }
+}

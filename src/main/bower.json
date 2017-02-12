@@ -1,0 +1,13 @@
+{
+  "name": "myip",
+  "description": "A better what's my IP Address",
+  "version": "1.0.0",
+  "homepage": "https://github.com/bramp/myip",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "angular": "1.6.x",
+    "angular-bootstrap": "2.5.x",
+    "bootstrap": "3.3.x",
+    "components-font-awesome": "4.7.x"
+  }
+}

@@ -1,0 +1,83 @@
+runtime: go
+api_version: go1
+
+skip_files:
+- node_modules
+- static/bower_components/bootstrap/fonts
+- static/bower_components/bootstrap/grunt
+- static/bower_components/bootstrap/js
+- static/bower_components/bootstrap/less
+- static/bower_components/bootstrap/nuget
+- static/bower_components/components-font-awesome/less
+- static/bower_components/components-font-awesome/scss
+
+# List of handlers: https://gist.github.com/darktable/873098
+handlers:
+- url: /json
+  script: _go_app
+
+- url: /config.js
+  script: _go_app
+
+- url: /(.*\.css)
+  mime_type: text/css
+  static_files: static/\1
+  upload: static/(.*\.css)
+
+- url: /(.*\.js)
+  mime_type: text/javascript
+  static_files: static/\1
+  upload: static/(.*\.js)
+
+- url: /(.*\.txt)
+  mime_type: text/plain
+  static_files: static/\1
+  upload: static/(.*\.txt)
+
+# Images
+- url: /(.*\.ico)
+  mime_type: image/x-icon
+  static_files: static/\1
+  upload: static/(.*\.ico)
+
+- url: /(.*\.(svg|svgz))
+  mime_type: images/svg+xml
+  static_files: static/\1
+  upload: static/(.*\.(svg|svgz))
+
+# Fonts
+- url: /(.*\.ttf)
+  mime_type: application/x-font-ttf
+  static_files: static/\1
+  upload: static/(.*\.ttf)
+
+- url: /(.*\.woff)
+  mime_type: application/font-woff
+  static_files: static/\1
+  upload: static/(.*\.woff)
+
+- url: /(.*\.woff2)
+  mime_type: application/font-woff2
+  static_files: static/\1
+  upload: static/(.*\.woff2)
+
+- url: /(.*\.otf)
+  mime_type: application/x-font-opentype
+  static_files: static/\1
+  upload: static/(.*\.otf)
+
+- url: /(.*\.eot)
+  mime_type: application/vnd.ms-fontobject
+  static_files: static/\1
+  upload: static/(.*\.eot)
+
+# Root
+- url: /
+  static_files: static/index.html
+  upload: static/index.html
+  http_headers:
+    Content-Security-Policy: >-
+      default-src 'self';
+      connect-src *;
+      script-src 'self' www.google-analytics.com;
+      img-src data: 'self' www.google-analytics.com maps.googleapis.com;
