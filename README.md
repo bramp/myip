@@ -47,7 +47,6 @@ All three domain names should be configured in main.go (find the prodConfig var)
 
 To deploy:
 ```bash
-cd src/main
 make deploy
 ```
 
@@ -60,7 +59,6 @@ The first can be either, and the latter are IPv4 and IPv6 respectively.
 
 To start up a local instance, just execute:
 ```bash
-cd src/main
 make serve
 ```
 

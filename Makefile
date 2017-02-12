@@ -48,13 +48,19 @@ node_modules: package.json
 	touch $@
 
 deps: node_modules src/main/regexes.yaml
-	goapp get github.com/miekg/dns
-	goapp get github.com/gorilla/handlers
-	goapp get github.com/gorilla/mux
-	goapp get github.com/domainr/whois
-	goapp get golang.org/x/net/context
-	goapp get google.golang.org/appengine/socket
-	goapp get github.com/ua-parser/uap-go/uaparser
+	# TODO Make this nicer:
+	PKG=github.com/miekg/dns;                 [ -d $(ROOT)/vendor/src/$$PKG ] || goapp get $$PKG
+	PKG=github.com/gorilla/handlers;          [ -d $(ROOT)/vendor/src/$$PKG ] || goapp get $$PKG
+	PKG=github.com/gorilla/mux;               [ -d $(ROOT)/vendor/src/$$PKG ] || goapp get $$PKG
+	PKG=github.com/domainr/whois;             [ -d $(ROOT)/vendor/src/$$PKG ] || goapp get $$PKG
+	PKG=golang.org/x/net/context;             [ -d $(ROOT)/vendor/src/$$PKG ] || goapp get $$PKG
+	PKG=google.golang.org/appengine/socket;   [ -d $(ROOT)/vendor/src/$$PKG ] || goapp get $$PKG
+	PKG=github.com/ua-parser/uap-go/uaparser; [ -d $(ROOT)/vendor/src/$$PKG ] || goapp get $$PKG
+	PKG=github.com/miekg/dns;                 [ -d $(ROOT)/vendor/src/$$PKG ] || goapp get $$PKG
+
+	# Test dependencies:
+	PKG=github.com/kylelemons/godebug/pretty; [ -d $(ROOT)/vendor/src/$(PKG) ] || goapp get $$PKG
+
 
 check: fmt vet lint test
 
@@ -71,10 +77,10 @@ lint:
 test:
 	goapp test lib/...
 
-serve:
+serve: deps
 	goapp serve $(APP_YAML)
 
-deploy: #deps check
+deploy:
 	#@read -p "What is your Project ID?: " projectID; \
 	#goapp deploy -application $$projectID $(APP_YAML)
 	goapp deploy -application myip-158305 -version v1 $(APP_YAML)
