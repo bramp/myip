@@ -18,7 +18,7 @@ Check it in action: [ip.bramp.net](http://ip.bramp.net/)
 
 [![ip.bramp.net screenshot](screenshot.png)](http://ip.bramp.net/)
 
-This project was quite literally hacked out one weekend, and was my first App Engine project.
+This project was quite literally hacked out in one weekend, and was my first App Engine project.
 
 *This is not an official Google product*
 
@@ -76,6 +76,7 @@ TODO
 - [ ] Add more server side logging
 - [ ] Implement a App Engine Flex, and other PaaS environments
 - [ ] Minify all css and js and combine into one file
+- [ ] Put behind SSL (grrr App Engine's lack of Let's Encrypt)
 
 Licence (Apache 2)
 ------------------

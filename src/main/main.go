@@ -182,7 +182,7 @@ func getRemoteAddr(req *http.Request) (string, error) {
 		}
 	}
 
-	// Some systems (namely AppEngine Flex encode the remoteAddr with a port)
+	// Some systems (namely App Engine Flex encode the remoteAddr with a port)
 	host, _, err := net.SplitHostPort(remoteAddr)
 	if err != nil {
 		// for now assume the RemoteAddr was just a addr (with no port)
