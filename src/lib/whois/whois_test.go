@@ -18,6 +18,8 @@ import (
 	"io/ioutil"
 	"path"
 	"testing"
+	"github.com/kylelemons/godebug/pretty"
+	"strings"
 )
 
 func TestParseWhois(t *testing.T) {
@@ -44,6 +46,40 @@ func TestParseWhois(t *testing.T) {
 		}
 		if m[whoisKey] != test.want {
 			t.Errorf("parseWhois(%q)[%q] = %q, want %q", test.result, whoisKey, m[whoisKey], test.want)
+		}
+	}
+
+}
+
+func TestCleanupWhois(t *testing.T) {
+	data := []struct {
+		input string
+		want string
+	}{
+		{input: "whois-1.txt", want: "whois-1.txt"},
+		{input: "whois-2.txt", want: "whois-2.txt"},
+		{input: "whois-3.txt", want: "whois-3-clean.txt"},
+		{input: "whois-4.txt", want: "whois-4.txt"},
+	}
+
+	for _, test := range data {
+		input, err := ioutil.ReadFile(path.Join("testdata", test.input))
+		if err != nil {
+			t.Fatalf("Failed to read test data %q: %s", test.input, err)
+		}
+
+		want, err := ioutil.ReadFile(path.Join("testdata", test.want))
+		if err != nil {
+			t.Fatalf("Failed to read test data %q: %s", test.want, err)
+		}
+
+		// A bit of a hack to trim, but avoids false positive due to IDEs adding newlines at the
+		// end of the test data.
+		wantStr := strings.TrimSpace(string(want))
+
+		got := cleanupWhois(string(input))
+		if diff := pretty.Compare(got, wantStr); diff != "" {
+			t.Errorf("cleanupWhois(%q) diff (-got +want)\n%s", test.input, diff)
 		}
 	}
 

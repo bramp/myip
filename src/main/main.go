@@ -133,8 +133,10 @@ func healthCheckHandler(w http.ResponseWriter, _ *http.Request) {
 	fmt.Fprint(w, "ok")
 }
 
-var configTemplate =
-`var SERVERS = {
+var configTemplate =  `
+var MAIN_HOST = "{{.Host}}";
+
+var SERVERS = {
    "IPv4": "{{.Host4}}",
    "IPv6": "{{.Host6}}"
 };
