@@ -71,20 +71,20 @@ func longestCommonString(lines []string) (int, int) {
 	}
 
 	longest := 0
-	y_longest := 0
+	yLongest := 0
 	for x := 1; x < 1+len(lines); x++ {
 		for y := x + 1; y < 1+len(lines); y++ {
 			if lines[x-1] == lines[y-1] {
 				m[x][y] = m[x-1][y-1] + 1
 				if m[x][y] > longest {
 					longest = m[x][y]
-					y_longest = y
+					yLongest = y
 				}
 			}
 		}
 	}
 
-	return y_longest - longest, y_longest
+	return yLongest - longest, yLongest
 }
 
 // cleanupWhois trims whitespace, and excessive (but useless) text from the whois response
