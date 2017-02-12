@@ -20,10 +20,10 @@ import (
 
 func TestParseLatLong(t *testing.T) {
 	data := []struct {
-		input  string
+		input             string
 		wantLat, wantLong float64
-		}{
-		{input: "37.562992,-122.325525", wantLat: 37.562992, wantLong:-122.325525},
+	}{
+		{input: "37.562992,-122.325525", wantLat: 37.562992, wantLong: -122.325525},
 	}
 
 	for _, test := range data {
@@ -33,7 +33,7 @@ func TestParseLatLong(t *testing.T) {
 			continue
 		}
 		if lat != test.wantLat || long != test.wantLong {
-			t.Errorf("parseLatLong(%q) = (%v, %v), want (%v, %v)", test.input, lat, long, test.wantLat, test.wantLong )
+			t.Errorf("parseLatLong(%q) = (%v, %v), want (%v, %v)", test.input, lat, long, test.wantLat, test.wantLong)
 		}
 	}
 

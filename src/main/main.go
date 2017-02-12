@@ -23,15 +23,16 @@ import (
 	"net/http"
 	"os"
 
+	"text/template"
+
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
-	"text/template"
 	"github.com/ua-parser/uap-go/uaparser"
 )
 
 // TODO Turn this into a config file that gets parsed onstartup
 type Config struct {
-	Host string `json:",omitempty"`
+	Host  string `json:",omitempty"`
 	Host4 string `json:",omitempty"`
 	Host6 string `json:",omitempty"`
 
@@ -56,7 +57,7 @@ type Config struct {
 	CityHeader string `json:",omitempty"`
 
 	// TODO Document
-	RegionHeader string `json:",omitempty"`
+	RegionHeader  string `json:",omitempty"`
 	CountryHeader string `json:",omitempty"`
 
 	// RequestIDHeader is the header with the Request ID
@@ -118,23 +119,22 @@ type dnsResponse struct {
 }
 
 type locationResponse struct {
-	City string    `json:",omitempty"`
-	Region string  `json:",omitempty"`
+	City    string `json:",omitempty"`
+	Region  string `json:",omitempty"`
 	Country string `json:",omitempty"`
 
 	Lat, Long float64 `json:",omitempty"`
 }
 
-
 type myIPResponse struct {
 	RequestID string `json:",omitempty"`
 
-	RemoteAddr         string
-	RemoteAddrFamily   string
+	RemoteAddr        string
+	RemoteAddrFamily  string
 	RemoteAddrReverse *dnsResponse   `json:",omitempty"`
 	RemoteAddrWhois   *whoisResponse `json:",omitempty"`
 
-	ActualRemoteAddr         string `json:",omitempty"` // The actual one we observed
+	ActualRemoteAddr string `json:",omitempty"` // The actual one we observed
 
 	Method string
 	URL    string
@@ -142,12 +142,11 @@ type myIPResponse struct {
 
 	Header http.Header
 
-	Location *locationResponse `json:",omitempty"`
-	UserAgent *uaparser.Client `json:",omitempty"`
+	Location  *locationResponse `json:",omitempty"`
+	UserAgent *uaparser.Client  `json:",omitempty"`
 
 	Insights map[string]string `json:",omitempty"`
 }
-
 
 func init() {
 	registerHandlers()
@@ -223,7 +222,6 @@ func handleConfigJs(w http.ResponseWriter, _ *http.Request) {
 		return
 	}
 }
-
 
 type app func(*http.Request) (interface{}, error)
 

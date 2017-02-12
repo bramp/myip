@@ -25,7 +25,6 @@ func main() {
 	appengine.Main()
 }
 
-
 /*
 func handleWhois(ipAddr string) (*whoisResponse) {
 	body, err := queryIpWhois(ipAddr)

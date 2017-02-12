@@ -15,10 +15,10 @@
 package main
 
 import (
-	"net/http"
-	"strings"
 	"errors"
+	"net/http"
 	"strconv"
+	"strings"
 )
 
 func parseLatLong(latlong string) (float64, float64, error) {
@@ -38,15 +38,14 @@ func parseLatLong(latlong string) (float64, float64, error) {
 	return lat, long, nil
 }
 
-
-func handleLocation(req *http.Request) (*locationResponse) {
+func handleLocation(req *http.Request) *locationResponse {
 	lat, long, _ := parseLatLong(req.Header.Get(config.LatLongHeader))
 	locationResponse := &locationResponse{
-		City: req.Header.Get(config.CityHeader),
-		Region: req.Header.Get(config.RegionHeader),
+		City:    req.Header.Get(config.CityHeader),
+		Region:  req.Header.Get(config.RegionHeader),
 		Country: req.Header.Get(config.CountryHeader),
-		Lat: lat,
-		Long: long,
+		Lat:     lat,
+		Long:    long,
 	}
 
 	locationResponse.City = "san mateo"

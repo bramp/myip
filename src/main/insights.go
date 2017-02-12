@@ -15,9 +15,9 @@
 package main
 
 import (
-	"strings"
-	"net/http"
 	"net"
+	"net/http"
+	"strings"
 )
 
 func addressFamily(addr string) string {
@@ -31,7 +31,7 @@ func addressFamily(addr string) string {
 	return "Unknown"
 }
 
-func addInsights(req *http.Request, resp *myIPResponse) (*myIPResponse) {
+func addInsights(req *http.Request, resp *myIPResponse) *myIPResponse {
 	resp.Insights = make(map[string]string)
 
 	if s := req.Header.Get("Via"); strings.Contains(s, "Chrome-Compression-Proxy") {

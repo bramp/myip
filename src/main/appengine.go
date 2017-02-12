@@ -24,14 +24,14 @@ import (
 	"golang.org/x/net/context"
 	"google.golang.org/appengine"
 
+	"encoding/json"
 	"lib/dns"
+	"lib/ua"
 	"lib/whois"
 	"strings"
-	"encoding/json"
-	"github.com/ua-parser/uap-go/uaparser"
-	"lib/ua"
-)
 
+	"github.com/ua-parser/uap-go/uaparser"
+)
 
 func ternary(b bool, t, f string) string {
 	if b {
@@ -43,12 +43,12 @@ func ternary(b bool, t, f string) string {
 var appengineDefaultConfig = &Config{
 	Debug: appengine.IsDevAppServer(),
 
-	IpHeader: "",
-	RequestIdHeader: ternary(appengine.IsDevAppServer() ,"X-Appengine-Request-Log-Id", "X-Cloud-Trace-Context"),
-	LatLongHeader: "X-Appengine-Citylatlong",
-	CityHeader: "X-Appengine-City",
+	IpHeader:        "",
+	RequestIdHeader: ternary(appengine.IsDevAppServer(), "X-Appengine-Request-Log-Id", "X-Cloud-Trace-Context"),
+	LatLongHeader:   "X-Appengine-Citylatlong",
+	CityHeader:      "X-Appengine-City",
 
-	DisallowedHeaders: []string {
+	DisallowedHeaders: []string{
 		"X-Appengine-Default-Namespace",
 		"X-Appengine-Request-Id-Hash",
 		"X-Appengine-Request-Log-Id",
@@ -159,10 +159,10 @@ func handleMyIP(req *http.Request) (interface{}, error) {
 		RemoteAddrReverse: dnsResp,
 		RemoteAddrWhois:   whoisResp,
 
-		ActualRemoteAddr:  req.RemoteAddr,
+		ActualRemoteAddr: req.RemoteAddr,
 
 		UserAgent: userAgentClient,
-		Location: locationResponse,
+		Location:  locationResponse,
 
 		Method: req.Method,
 		URL:    req.URL.String(),
