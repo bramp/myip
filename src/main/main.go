@@ -32,6 +32,7 @@ import (
 	"lib/dns"
 	"lib/location"
 	"lib/whois"
+	"bytes"
 )
 
 var debugConfig = &conf.Config{
@@ -132,31 +133,36 @@ func healthCheckHandler(w http.ResponseWriter, _ *http.Request) {
 	fmt.Fprint(w, "ok")
 }
 
+var configTemplate =
+`var SERVERS = {
+   "IPv4": "{{.Host4}}",
+   "IPv6": "{{.Host6}}"
+};
+
+var MAPS_API_KEY = "{{.MapsAPIKey}}";`
+
 func handleConfigJs(w http.ResponseWriter, _ *http.Request) {
+	tmpl, err := template.New("config").Parse(configTemplate)
+
+	if err != nil {
+		w.WriteHeader(500)
+		w.Write([]byte(err.Error()))
+		return
+	}
+
+	// Buffer the output so we can put a error at the front if it fails
+	var buf bytes.Buffer
+	err = tmpl.Execute(&buf, config)
+	if err != nil {
+		// TODO Consider writing out a nice error js field, instead of invalid js.
+		w.WriteHeader(500)
+		w.Write([]byte(err.Error()))
+		return
+	}
+
 	// TODO Eventually add a long cache-expire time
-
-	tmpl, err := template.New("config").Parse(`
-	   var SERVERS = {
-		   "IPv4": "{{.Host4}}",
-		   "IPv6": "{{.Host6}}"
-	   };
-
-	   var MAPS_API_KEY = "{{.MapsApiKey}}";
-   `)
-
-	if err != nil {
-		w.WriteHeader(500)
-		w.Write([]byte(err.Error()))
-		return
-	}
-
 	w.Header().Set("Content-Type", "text/javascript")
-	err = tmpl.Execute(w, config)
-	if err != nil {
-		w.WriteHeader(500)
-		w.Write([]byte(err.Error()))
-		return
-	}
+	buf.WriteTo(w)
 }
 
 type app func(*http.Request) (interface{}, error)
