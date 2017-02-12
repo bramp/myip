@@ -31,10 +31,10 @@
 
         <div class="page-header">
             <h1><small>(A better)</small> What's My IP Address?</h1>
-            <p class="lead">Determines both your IPv4 and IPv6 addresses, does WHOIS and reverse DNS lookups, and shows all your headers.</p>
+            <p class="lead">Determines both your IPv4 and IPv6 addresses, issues WHOIS and reverse DNS lookups, and shows all your HTTP headers.</p>
         </div>
 
-        <div ng-repeat="address in addresses" class="panel panel-default panel-primary">
+        <div ng-repeat="address in addresses" class="ng-cloak panel panel-default panel-primary">
             <div class="panel-heading">
                 <h2 ng-if="address.Error">{{address.RemoteAddrFamily}}: &lt;error: {{address.Error}}&gt;</span></h2>
                 <h2 ng-if="!address.Error">{{address.RemoteAddrFamily}}: {{address.RemoteAddr}}
