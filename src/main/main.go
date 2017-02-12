@@ -28,72 +28,32 @@ import (
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/ua-parser/uap-go/uaparser"
+	"lib/conf"
+	"lib/dns"
+	"lib/location"
+	"lib/whois"
 )
 
-// TODO Turn this into a config file that gets parsed onstartup
-type Config struct {
-	Host  string `json:",omitempty"`
-	Host4 string `json:",omitempty"`
-	Host6 string `json:",omitempty"`
-
-	// Debug enables unsafe options for debugging
-	Debug bool `json:",omitempty"`
-
-	// IpHeader is the header to trust to contain the user's IP address
-	// Examples:
-	//   "Cf-Connecting-Ip" for CloudFlare
-	//   "X-Forwarded-For" for generic proxies
-	IpHeader string `json:",omitempty"`
-
-	// LatLongHeader is the header with the LatLong information
-	// Examples:
-	//   "X-Appengine-Citylatlong" for App Engine (Standard)
-	LatLongHeader string `json:",omitempty"`
-
-	// LatLongHeader is the header with the LatLong information
-	// Examples:
-	//   "Cf-Ipcountry" for CloudFlare
-	//   "X-Appengine-City" for App Engine (Standard)
-	CityHeader string `json:",omitempty"`
-
-	// TODO Document
-	RegionHeader  string `json:",omitempty"`
-	CountryHeader string `json:",omitempty"`
-
-	// RequestIDHeader is the header with the Request ID
-	// Examples:
-	//   "Cf-Ray" for CloudFlare
-	//   "X-Appengine-City" for App Engine (Standard)
-	RequestIdHeader string `json:",omitempty"`
-
-	// DisallowedHeaders is a list of headers filtered from the response. These either add no value
-	// or leak information that we don't want displayed to the user.
-	DisallowedHeaders []string `json:",omitempty"`
-
-	// MapsApiKey is used to render static Google Maps
-	MapsApiKey string `json:",omitempty"`
-}
-
-var debugConfig = &Config{
+var debugConfig = &conf.Config{
 	Host:  "http://localhost:8080",
 	Host4: "http://127.0.0.1:8080",
 	Host6: "http://[::1]:8080",
 
-	MapsApiKey: "AIzaSyA6-HIkxuJEX6Hf3rzVx07no32YM3N5V9s",
+	MapsAPIKey: "AIzaSyA6-HIkxuJEX6Hf3rzVx07no32YM3N5V9s",
 
 	DisallowedHeaders: []string{"none"},
 }
 
-var prodConfig = &Config{
+var prodConfig = &conf.Config{
 	Host:  "http://ip.bramp.net",
 	Host4: "http://ip4.bramp.net",
 	Host6: "http://ip6.bramp.net",
 
-	MapsApiKey: "AIzaSyA6-HIkxuJEX6Hf3rzVx07no32YM3N5V9s",
+	MapsAPIKey: "AIzaSyA6-HIkxuJEX6Hf3rzVx07no32YM3N5V9s",
 
 	// If behind CloudFlare use the following:
-	//IpHeader: "Cf-Connecting-Ip",
-	//RequestIdHeader: "Cf-Ray",
+	//IPHeader: "Cf-Connecting-Ip",
+	//RequestIDHeader: "Cf-Ray",
 }
 
 var config = loadConfig()
@@ -102,37 +62,13 @@ type errResponse struct {
 	Error string
 }
 
-type whoisResponse struct {
-	Query string
-
-	// One of the following
-	Body  string `json:",omitempty"`
-	Error string `json:",omitempty"`
-}
-
-type dnsResponse struct {
-	Query string
-
-	// One of the following
-	Names []string `json:",omitempty"`
-	Error string   `json:",omitempty"`
-}
-
-type locationResponse struct {
-	City    string `json:",omitempty"`
-	Region  string `json:",omitempty"`
-	Country string `json:",omitempty"`
-
-	Lat, Long float64 `json:",omitempty"`
-}
-
 type myIPResponse struct {
 	RequestID string `json:",omitempty"`
 
 	RemoteAddr        string
 	RemoteAddrFamily  string
-	RemoteAddrReverse *dnsResponse   `json:",omitempty"`
-	RemoteAddrWhois   *whoisResponse `json:",omitempty"`
+	RemoteAddrReverse *dns.Response   `json:",omitempty"`
+	RemoteAddrWhois   *whois.Response `json:",omitempty"`
 
 	ActualRemoteAddr string `json:",omitempty"` // The actual one we observed
 
@@ -142,8 +78,8 @@ type myIPResponse struct {
 
 	Header http.Header
 
-	Location  *locationResponse `json:",omitempty"`
-	UserAgent *uaparser.Client  `json:",omitempty"`
+	Location  *location.Response `json:",omitempty"`
+	UserAgent *uaparser.Client   `json:",omitempty"` // TODO Create a ua.Response
 
 	Insights map[string]string `json:",omitempty"`
 }
@@ -175,8 +111,8 @@ func getRemoteAddr(req *http.Request) (string, error) {
 		return host, nil
 	}
 
-	if config.IpHeader != "" {
-		if addr := req.Header.Get(config.IpHeader); addr != "" {
+	if config.IPHeader != "" {
+		if addr := req.Header.Get(config.IPHeader); addr != "" {
 			remoteAddr = addr
 		}
 	}

@@ -26,6 +26,7 @@ func mustNewUaParser() *uaparser.Parser {
 	return p
 }
 
+// DetermineUA parses this user agent, and returns a uaparser.Client.
 func DetermineUA(useragent string) *uaparser.Client {
 	return parser.Parse(useragent)
 }

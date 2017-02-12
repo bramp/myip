@@ -12,14 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+package location
 
 import (
 	"errors"
+	"lib/conf"
 	"net/http"
 	"strconv"
 	"strings"
 )
+
+// Response contains the location data we send to the user.
+type Response struct {
+	City    string `json:",omitempty"`
+	Region  string `json:",omitempty"`
+	Country string `json:",omitempty"`
+
+	Lat, Long float64 `json:",omitempty"`
+}
 
 func parseLatLong(latlong string) (float64, float64, error) {
 	parts := strings.SplitN(latlong, ",", 2)
@@ -38,9 +48,10 @@ func parseLatLong(latlong string) (float64, float64, error) {
 	return lat, long, nil
 }
 
-func handleLocation(req *http.Request) *locationResponse {
+// Handle generates a location.Response
+func Handle(config *conf.Config, req *http.Request) *Response {
 	lat, long, _ := parseLatLong(req.Header.Get(config.LatLongHeader))
-	locationResponse := &locationResponse{
+	response := &Response{
 		City:    req.Header.Get(config.CityHeader),
 		Region:  req.Header.Get(config.RegionHeader),
 		Country: req.Header.Get(config.CountryHeader),
@@ -48,7 +59,5 @@ func handleLocation(req *http.Request) *locationResponse {
 		Long:    long,
 	}
 
-	locationResponse.City = "san mateo"
-
-	return locationResponse
+	return response
 }

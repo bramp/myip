@@ -1,3 +1,5 @@
+// +build appengine
+
 // Copyright 2015 Google Inc. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,29 +14,29 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// +build appengine
 package whois
 
 import (
-	"bufio"
 	"errors"
 	"log"
 	"net"
-	"strings"
 	"time"
 
-	"github.com/domainr/whois"
+	domainr "github.com/domainr/whois"
 	"golang.org/x/net/context"
 	"google.golang.org/appengine/socket"
 )
 
 type appEngineWhoisClient struct {
-	whois.Client
+	domainr.Client
 }
 
 const (
-	IANA_WHOIS   = "whois.iana.org"
+	// WhoisTimeout is the dial/read timeout for the whois requests.
 	WhoisTimeout = 10 * time.Second
+
+	// ianaWhoisServer is the address of the Internet Assigned Numbers Authority whois server.
+	ianaWhoisServer = "whois.iana.org"
 )
 
 func NewAppEngineWhoisClient(ctx context.Context) *appEngineWhoisClient {
@@ -49,7 +51,7 @@ func NewAppEngineWhoisClient(ctx context.Context) *appEngineWhoisClient {
 	}
 
 	return &appEngineWhoisClient{
-		whois.Client{
+		domainr.Client{
 			Dial: dial,
 		},
 	}
@@ -64,7 +66,7 @@ func (client *appEngineWhoisClient) QueryWhois(query, host string) (string, erro
 		query = "n " + query
 	}
 
-	request := &whois.Request{
+	request := &domainr.Request{
 		Query: query,
 		Host:  host,
 	}
@@ -87,36 +89,17 @@ func (client *appEngineWhoisClient) QueryWhois(query, host string) (string, erro
 // queryIpWhois issues two whois queries, the first to find the right whois server, and the 2nd to
 // that server.
 func (client *appEngineWhoisClient) QueryIpWhois(ipAddr string) (string, error) {
-	response, err := client.QueryWhois(ipAddr, IANA_WHOIS)
+	response, err := client.QueryWhois(ipAddr, ianaWhoisServer)
 
 	m, err := parseWhois(response)
 	if err != nil {
 		return "", err
 	}
 
-	host, found := m[WHOIS_KEY]
+	host, found := m[whoisKey]
 	if !found {
 		return "", errors.New("no whois server found")
 	}
 
 	return client.QueryWhois(ipAddr, host)
-}
-
-func parseWhois(response string) (map[string]string, error) {
-	m := map[string]string{}
-
-	scanner := bufio.NewScanner(strings.NewReader(response))
-	for scanner.Scan() {
-		line := scanner.Text()
-		if strings.HasPrefix(line, "%") {
-			continue
-		}
-
-		row := strings.Fields(line)
-		if len(row) >= 2 {
-			m[row[0]] = row[1]
-		}
-	}
-
-	return m, scanner.Err()
 }

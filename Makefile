@@ -2,7 +2,7 @@
 # http://www.compoundtheory.com/configuring-your-gopath-with-go-and-google-app-engine/
 #
 
-.PHONY: install-tools debug-env check imports fmt vet lint clean doc deps serve deploy
+.PHONY: install-tools debug-env check imports fmt vet lint clean test deps serve deploy
 
 
 #Fixes a bug in OSX Make with exporting PATH environment variables
@@ -28,20 +28,17 @@ install-tools:
 	rm -rf $(ROOT)/vendor/src/golang.org/lint/golint
 	rm -rf $(ROOT)/vendor/src/github.com/golang/x/tools/cmd/goimports
 
-check: imports fmt vet lint
-
-# Update all imports, and remove any that aren't necessary, for all go files we can find.
-imports:
-	find $(ROOT)/src -name '*.go' -exec goimports -w {} \;
+check: fmt vet lint test
 
 fmt:
-	goapp fmt src/...
+	goapp fmt main lib/...
 
 vet:
-	go vet src/...
+	go vet main lib/...
 
 lint:
-	golint src
+	golint main
+	golint lib/...
 
-doc:
-	godoc -http=:9090 &
+test:
+	goapp test lib/...

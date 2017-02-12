@@ -42,8 +42,8 @@ func TestParseWhois(t *testing.T) {
 			t.Errorf("parseWhois(%q) err: %q, want nil", test.result, err)
 			continue
 		}
-		if m[WHOIS_KEY] != test.want {
-			t.Errorf("parseWhois(%q)[%q] = %q, want %q", test.result, WHOIS_KEY, m[WHOIS_KEY], test.want)
+		if m[whoisKey] != test.want {
+			t.Errorf("parseWhois(%q)[%q] = %q, want %q", test.result, whoisKey, m[whoisKey], test.want)
 		}
 	}
 

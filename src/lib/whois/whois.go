@@ -16,14 +16,27 @@ package whois
 
 import (
 	"bufio"
+	"golang.org/x/net/context"
 	"strings"
 )
 
 const (
-	WHOIS_KEY = "whois:"
+	// TODO Strip the ':' from the key
+	whoisKey = "whois:"
 )
 
-func ParseWhois(response string) (map[string]string, error) {
+// Response contains the Whois data we send to the user.
+type Response struct {
+	Query string
+
+	// One of the following
+	Body  string `json:",omitempty"`
+	Error string `json:",omitempty"`
+}
+
+// parseWhois takes a whois response, and splits it into key-value pairs, so fields can easily
+// be extracted.
+func parseWhois(response string) (map[string]string, error) {
 	m := map[string]string{}
 
 	scanner := bufio.NewScanner(strings.NewReader(response))
@@ -40,4 +53,20 @@ func ParseWhois(response string) (map[string]string, error) {
 	}
 
 	return m, scanner.Err()
+}
+
+// Handle generates a whois.Response
+func Handle(ctx context.Context, ipAddr string) *Response {
+	client := NewAppEngineWhoisClient(ctx) // We shouldn't store ctx in the client, but there is no alternative
+
+	body, err := client.QueryIpWhois(ipAddr)
+	resp := &Response{
+		Query: ipAddr,
+		Body:  strings.TrimSpace(body),
+	}
+	if err != nil {
+		resp.Error = err.Error()
+	}
+
+	return resp
 }
