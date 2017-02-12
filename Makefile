@@ -27,13 +27,18 @@ APP_YAML = src/main/app.yaml
 debug-env:
 	printenv | grep 'GO'
 
+# Only update node_modules if the package.json has changed.
+node_modules: package.json
+	npm install
+	touch $@
+
 install-tools: node_modules
 	go get github.com/golang/lint/golint
 	go get golang.org/x/tools/cmd/goimports
 	rm -rf $(ROOT)/vendor/src/golang.org/lint/golint
 	rm -rf $(ROOT)/vendor/src/github.com/golang/x/tools/cmd/goimports
 
-check-updates:
+check-updates: node_modules
 	ncu -m npm
 	cd src/main; ncu -m bower
 	# TODO Write goapp get -u script
@@ -41,11 +46,6 @@ check-updates:
 # UA profile data
 src/main/regexes.yaml:
 	curl -o "$@" -z "$@" "https://raw.githubusercontent.com/ua-parser/uap-core/master/regexes.yaml"
-
-# Only update node_modules if the package.json has changed.
-node_modules: package.json
-	npm install
-	touch $@
 
 deps: node_modules src/main/regexes.yaml
 	# TODO Make this nicer:
@@ -62,7 +62,7 @@ deps: node_modules src/main/regexes.yaml
 	PKG=github.com/kylelemons/godebug/pretty; [ -d $(ROOT)/vendor/src/$(PKG) ] || goapp get $$PKG
 
 
-check: fmt vet lint test
+check: deps fmt vet lint test
 
 fmt:
 	goapp fmt main lib/...
@@ -80,7 +80,8 @@ test:
 serve: deps
 	goapp serve $(APP_YAML)
 
-deploy:
+deploy: check
+	# TODO get the version number from the git-hash
 	#@read -p "What is your Project ID?: " projectID; \
 	#goapp deploy -application $$projectID $(APP_YAML)
 	goapp deploy -application myip-158305 -version v1 $(APP_YAML)
