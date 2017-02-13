@@ -1,5 +1,4 @@
-MyIP [![License](https://img.shields.io/github/license/bramp/myip.svg)](https://github.com/bramp/myip#licence-apache-2)
-====
+# MyIP [![License](https://img.shields.io/github/license/bramp/myip.svg)](https://github.com/bramp/myip#licence-apache-2)
 by Andrew Brampton ([bramp.net](https://bramp.net)) (c) 2017
 
 <!--
@@ -22,8 +21,15 @@ This project was quite literally hacked out in one weekend, and was my first App
 
 *This is not an official Google product*
 
-Install
--------
+## Install
+
+### Prerequisites
+
+* [App Engine SDK for Go](https://cloud.google.com/appengine/docs/go/download)
+* [Make](https://www.gnu.org/software/make/) (which comes on Linux or Mac)
+* [npm](https://www.npmjs.com/)
+
+### Domains
 
 As designed, this Go application will run on the Standard Google App Engine. It requires
 two to three host names. One that is IPv4 only, and one that is IPv6 only. In my configuration
@@ -34,7 +40,6 @@ and ip6.bramp.net that only has AAAA records. These all point to the same App En
 $ dig ip.bramp.net 
 ip.bramp.net.		300	IN	A	216.239.32.21
 ip.bramp.net.		300	IN	AAAA	2001:4860:4802:32::15
-
 
 $ dig ip4.bramp.net
 ip4.bramp.net.		300	IN	A	216.239.32.21
@@ -50,8 +55,7 @@ To deploy:
 make deploy
 ```
 
-Development
------------
+## Development
 
 To run locally we use the addresses, [localhost:8080](http://localhost:8080),
 [127.0.0.1:8080](http://127.0.0.1:8080), and [http://[::1]:8080](http://[::1]:8080).
@@ -63,8 +67,7 @@ make serve
 ```
 
 
-TODO
-----
+## TODO
 
 - [ ] Add rate limiting of requests
 - [ ] Add caching of DNS and WHOIS records (including the iana IP ranges)
@@ -76,8 +79,7 @@ TODO
 - [ ] Minify all css and js and combine into one file
 - [ ] Put behind SSL (grrr App Engine's lack of Let's Encrypt)
 
-Licence (Apache 2)
-------------------
+## Licence (Apache 2)
 
 Copyright 2017 Google Inc. All Rights Reserved.
 
