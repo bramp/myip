@@ -48,19 +48,12 @@ src/main/regexes.yaml:
 	curl -o "$@" -z "$@" "https://raw.githubusercontent.com/ua-parser/uap-core/master/regexes.yaml"
 
 deps: node_modules src/main/regexes.yaml
-	# TODO Make this nicer:
-	PKG=github.com/miekg/dns;                 [ -d $(ROOT)/vendor/src/$$PKG ] || goapp get $$PKG
-	PKG=github.com/gorilla/handlers;          [ -d $(ROOT)/vendor/src/$$PKG ] || goapp get $$PKG
-	PKG=github.com/gorilla/mux;               [ -d $(ROOT)/vendor/src/$$PKG ] || goapp get $$PKG
-	PKG=github.com/domainr/whois;             [ -d $(ROOT)/vendor/src/$$PKG ] || goapp get $$PKG
-	PKG=golang.org/x/net/context;             [ -d $(ROOT)/vendor/src/$$PKG ] || goapp get $$PKG
-	PKG=google.golang.org/appengine/socket;   [ -d $(ROOT)/vendor/src/$$PKG ] || goapp get $$PKG
-	PKG=github.com/ua-parser/uap-go/uaparser; [ -d $(ROOT)/vendor/src/$$PKG ] || goapp get $$PKG
-	PKG=github.com/miekg/dns;                 [ -d $(ROOT)/vendor/src/$$PKG ] || goapp get $$PKG
-
-	# Test dependencies:
-	PKG=github.com/kylelemons/godebug/pretty; [ -d $(ROOT)/vendor/src/$(PKG) ] || goapp get $$PKG
-
+	for pkg in github.com/miekg/dns github.com/gorilla/handlers github.com/gorilla/mux       \
+		github.com/domainr/whois golang.org/x/net/context google.golang.org/appengine/socket \
+		github.com/ua-parser/uap-go/uaparser github.com/kylelemons/godebug/pretty;           \
+	do \
+		if [ ! -d $(ROOT)/vendor/src/$$pkg ]; then goapp get $$pkg; fi \
+	done
 
 check: deps fmt vet lint test
 
