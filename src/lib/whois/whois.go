@@ -121,9 +121,8 @@ func cleanupWhois(response string) string {
 
 // Handle generates a whois.Response
 func Handle(ctx context.Context, ipAddr string) *Response {
-	client := NewAppEngineWhoisClient(ctx) // We shouldn't store ctx in the client, but there is no alternative
 
-	body, err := client.QueryIpWhois(ipAddr)
+	body, err := QueryIPWhois(ctx, ipAddr)
 	resp := &Response{
 		Query: ipAddr,
 		Body:  cleanupWhois(body),

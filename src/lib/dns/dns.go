@@ -15,6 +15,7 @@
 package dns
 
 import (
+	"golang.org/x/net/context"
 	"time"
 )
 
@@ -33,3 +34,17 @@ type Response struct {
 
 // Google IPv4 and IPv6 DNS servers // TODO Make configurable
 var dnsServers = []string{"8.8.8.8", "8.8.4.4", "2001:4860:4860::8888", "2001:4860:4860::8844"}
+
+// HandleReverseDNS generates a dns.Response for the given IP address.
+func HandleReverseDNS(ctx context.Context, ipAddr string) *Response {
+	names, err := LookupAddr(ctx, ipAddr)
+	resp := &Response{
+		Query: ipAddr,
+		Names: names,
+	}
+	if err != nil {
+		resp.Error = err.Error()
+	}
+
+	return resp
+}

@@ -109,7 +109,7 @@ func handleMyIP(req *http.Request) (interface{}, error) {
 
 	if host != "" {
 		if req.URL.Query().Get("reverse") != "false" {
-			dnsResp = dns.HandleReverseDns(ctx, host)
+			dnsResp = dns.HandleReverseDNS(ctx, host)
 		}
 
 		if req.URL.Query().Get("whois") != "false" {
@@ -124,14 +124,14 @@ func handleMyIP(req *http.Request) (interface{}, error) {
 
 	locationResponse := location.Handle(config, req)
 
-	requestId := req.Header.Get(config.RequestIDHeader)
+	requestID := req.Header.Get(config.RequestIDHeader)
 
 	for _, remove := range config.DisallowedHeaders {
 		req.Header.Del(remove)
 	}
 
 	return addInsights(req, &myIPResponse{
-		RequestID: requestId,
+		RequestID: requestID,
 
 		RemoteAddr:        host,
 		RemoteAddrFamily:  family,

@@ -18,18 +18,14 @@ package whois
 
 import (
 	"errors"
-	"log"
 	"net"
 	"time"
 
 	domainr "github.com/domainr/whois"
 	"golang.org/x/net/context"
+	"google.golang.org/appengine/log"
 	"google.golang.org/appengine/socket"
 )
-
-type appEngineWhoisClient struct {
-	domainr.Client
-}
 
 const (
 	// WhoisTimeout is the dial/read timeout for the whois requests.
@@ -39,30 +35,25 @@ const (
 	ianaWhoisServer = "whois.iana.org"
 )
 
-func NewAppEngineWhoisClient(ctx context.Context) *appEngineWhoisClient {
-	dial := func(network, address string) (net.Conn, error) {
-		deadline := time.Now().Add(WhoisTimeout)
-		conn, err := socket.DialTimeout(ctx, network, address, WhoisTimeout)
-		if err != nil {
-			return nil, err
-		}
-		conn.SetDeadline(deadline)
-		return conn, nil
-	}
-
-	return &appEngineWhoisClient{
-		domainr.Client{
-			Dial: dial,
+func clientWithContext(ctx context.Context) *domainr.Client {
+	return &domainr.Client{
+		Dial: func(network, address string) (net.Conn, error) {
+			deadline := time.Now().Add(WhoisTimeout)
+			conn, err := socket.DialTimeout(ctx, network, address, WhoisTimeout)
+			if err != nil {
+				return nil, err
+			}
+			return conn, conn.SetDeadline(deadline)
 		},
 	}
 }
 
-// TODO pass context to QueryWhois
-func (client *appEngineWhoisClient) QueryWhois(query, host string) (string, error) {
+// QueryWhois issues a WHOIS query to the given host.
+func QueryWhois(ctx context.Context, query, host string) (string, error) {
 
 	if host == "whois.arin.net" {
 		// ARIN's whois servers will reply with "Query terms are ambiguous" if the query
-		// is not prefixed with a n
+		// is not prefixed with a "n"
 		query = "n " + query
 	}
 
@@ -74,22 +65,25 @@ func (client *appEngineWhoisClient) QueryWhois(query, host string) (string, erro
 		return "", err
 	}
 
-	log.Printf("Whois requesting %s from %s", query, host)
+	log.Infof(ctx, "Whois request %q from %q", query, host)
+
+	// Create the client on the fly (which is cheap) so we can use the passed in context
+	client := clientWithContext(ctx)
 
 	response, err := client.Fetch(request)
 	if err != nil {
+		log.Warningf(ctx, "Whois failed %q from %q: %s", query, host, err)
 		return "", err
 	}
 
-	log.Printf("Whois response: %s", response.String())
-
+	log.Infof(ctx, "Whois response %q from %q", query, host)
 	return response.String(), err
 }
 
-// queryIpWhois issues two whois queries, the first to find the right whois server, and the 2nd to
-// that server.
-func (client *appEngineWhoisClient) QueryIpWhois(ipAddr string) (string, error) {
-	response, err := client.QueryWhois(ipAddr, ianaWhoisServer)
+// QueryIPWhois issues two whois queries, the first to find the right whois server,
+// and the 2nd to that server.
+func QueryIPWhois(ctx context.Context, ipAddr string) (string, error) {
+	response, err := QueryWhois(ctx, ipAddr, ianaWhoisServer)
 
 	m, err := parseWhois(response)
 	if err != nil {
@@ -98,8 +92,8 @@ func (client *appEngineWhoisClient) QueryIpWhois(ipAddr string) (string, error) 
 
 	host, found := m[whoisKey]
 	if !found {
-		return "", errors.New("no whois server found")
+		return "", errors.New("no whois server found for this ip address")
 	}
 
-	return client.QueryWhois(ipAddr, host)
+	return QueryWhois(ctx, ipAddr, host)
 }

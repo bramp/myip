@@ -24,6 +24,7 @@ import (
 
 	mdns "github.com/miekg/dns"
 	"golang.org/x/net/context"
+	"google.golang.org/appengine/log"
 	"google.golang.org/appengine/socket"
 )
 
@@ -57,7 +58,8 @@ func appEngineExchange(ctx context.Context, m *mdns.Msg) (*mdns.Msg, error) {
 // of names mapping to that address. It uses the github.com/miekg/dns library instead of the native
 // net.LookupAddr which does not works on a standard App Engine.
 //
-// Note: App Engine does not seem to support net.LookupAddr(ipAddr) it returns "on [::1]:53: dial udp [::1]:53: socket: operation not permitted"
+// Note: App Engine does not seem to support net.LookupAddr(ipAddr) it returns
+// "on [::1]:53: dial udp [::1]:53: socket: operation not permitted"
 // TODO: Change ipAddr to be a slice
 func LookupAddr(ctx context.Context, ipAddr string) ([]string, error) {
 
@@ -80,12 +82,16 @@ func LookupAddr(ctx context.Context, ipAddr string) ([]string, error) {
 	m.Question = make([]mdns.Question, 1)
 	m.Question[0] = mdns.Question{name, mdns.TypePTR, mdns.ClassINET}
 
-	// TODO Add some kind of retry logic (for lost UDP packets)
+	log.Infof(ctx, "DNS request for %q: %s", ipAddr, m)
 
+	// TODO Add some kind of retry logic (for lost UDP packets)
 	in, err := appEngineExchange(ctx, m)
 	if err != nil {
+		log.Warningf(ctx, "DNS failed for %q: %s", ipAddr, err)
 		return nil, err
 	}
+
+	log.Infof(ctx, "DNS response for %q: %s", ipAddr, in)
 
 	result := []string{}
 	for _, record := range in.Answer {
@@ -95,17 +101,4 @@ func LookupAddr(ctx context.Context, ipAddr string) ([]string, error) {
 	}
 
 	return result, err
-}
-
-func HandleReverseDns(ctx context.Context, ipAddr string) *Response {
-	names, err := LookupAddr(ctx, ipAddr)
-	resp := &Response{
-		Query: ipAddr,
-		Names: names,
-	}
-	if err != nil {
-		resp.Error = err.Error()
-	}
-
-	return resp
 }
