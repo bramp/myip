@@ -17,7 +17,6 @@
 package whois
 
 import (
-	"errors"
 	"net"
 	"time"
 
@@ -25,6 +24,7 @@ import (
 	"golang.org/x/net/context"
 	"google.golang.org/appengine/log"
 	"google.golang.org/appengine/socket"
+	"fmt"
 )
 
 const (
@@ -76,7 +76,7 @@ func QueryWhois(ctx context.Context, query, host string) (string, error) {
 		return "", err
 	}
 
-	log.Infof(ctx, "Whois response %q from %q", query, host)
+	log.Infof(ctx, "Whois response %q from %q:\n%s", query, host, response)
 	return response.String(), err
 }
 
@@ -85,6 +85,8 @@ func QueryWhois(ctx context.Context, query, host string) (string, error) {
 func QueryIPWhois(ctx context.Context, ipAddr string) (string, error) {
 	response, err := QueryWhois(ctx, ipAddr, ianaWhoisServer)
 
+	// IANA returns a key value response with a "whois: ..." line to indicate the whois
+	// server for the owner of this IP range.
 	m, err := parseWhois(response)
 	if err != nil {
 		return "", err
@@ -92,7 +94,7 @@ func QueryIPWhois(ctx context.Context, ipAddr string) (string, error) {
 
 	host, found := m[whoisKey]
 	if !found {
-		return "", errors.New("no whois server found for this ip address")
+		return response, fmt.Errorf("no whois server found for %q", ipAddr)
 	}
 
 	return QueryWhois(ctx, ipAddr, host)

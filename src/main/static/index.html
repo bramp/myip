@@ -97,8 +97,8 @@
                     <div class="col-md-1"><h3 class="side-title">Whois</h3></div>
 
                     <div class="col-md-11">
-                        <pre ng-if="address.RemoteAddrWhois.Error">{{address.RemoteAddrWhois.Error}}</pre>
-                        <pre ng-if="!address.RemoteAddrWhois.Error">{{address.RemoteAddrWhois.Body}}</pre>
+                        <div ng-if="address.RemoteAddrWhois.Error" class="alert alert-danger">{{address.RemoteAddrWhois.Error}}</div>
+                        <pre ng-if="address.RemoteAddrWhois.Body">{{address.RemoteAddrWhois.Body}}</pre>
                     </div>
                 </div>
 
