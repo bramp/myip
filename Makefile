@@ -2,7 +2,9 @@
 # http://www.compoundtheory.com/configuring-your-gopath-with-go-and-google-app-engine/
 #
 
-.PHONY: install-tools debug-env check imports fmt vet lint clean test deps serve deploy
+.PHONY: default install-tools debug-env check imports fmt vet lint clean test deps serve deploy
+
+default: serve
 
 #Fixes a bug in OSX Make with exporting PATH environment variables
 #See: http://stackoverflow.com/questions/11745634/setting-path-variable-from-inside-makefile-does-not-work-for-make-3-81
