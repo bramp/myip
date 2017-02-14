@@ -12,16 +12,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-var myipApp = angular.module('myip', ['ui.bootstrap']);
+var myipApp = angular.module('myip', ['ui.bootstrap'], function MyIPApp($locationProvider) {
+    MyIPApp.$inject = ['$locationProvider'];
 
-myipApp.controller('MyIPController', function MyIPController($scope, $http) {
-    MyIPController.$inject = ['$scope', '$http'];
+    $locationProvider.html5Mode(true).hashPrefix('');
+});
 
+myipApp.controller('MyIPController', function MyIPController($scope, $http, $location) {
+    MyIPController.$inject = ['$scope', '$http', '$location'];
+
+    var host = $location.search().host;
     $scope.addresses = [];
 
     Object.keys(SERVERS).forEach(function(family) {
         var server = SERVERS[family];
         var url = server + '/json?family=' + family;
+
+        if (host) {
+            url = url + "&host=" + host
+        }
+
         $http.get(url).then(function success(response) {
             $scope.addresses.push(response.data);
 
