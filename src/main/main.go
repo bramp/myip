@@ -134,6 +134,9 @@ func healthCheckHandler(w http.ResponseWriter, _ *http.Request) {
 }
 
 var configTemplate = `
+var VERSION = "{{.Version}}";
+var BUILDTIME = "{{.BuildTime}}";
+
 var MAIN_HOST = "{{.Host}}";
 
 var SERVERS = {
@@ -142,6 +145,12 @@ var SERVERS = {
 };
 
 var MAPS_API_KEY = "{{.MapsAPIKey}}";`
+
+type configAndVersion struct {
+	*conf.Config
+	Version   string
+	BuildTime string
+}
 
 func handleConfigJs(w http.ResponseWriter, _ *http.Request) {
 	tmpl, err := template.New("config").Parse(configTemplate)
@@ -152,9 +161,17 @@ func handleConfigJs(w http.ResponseWriter, _ *http.Request) {
 		return
 	}
 
+	data := struct {
+		*conf.Config
+		Version   string
+		BuildTime string
+	}{
+		config, Version, BuildTime,
+	}
+
 	// Buffer the output so we can put a error at the front if it fails
 	var buf bytes.Buffer
-	err = tmpl.Execute(&buf, config)
+	err = tmpl.Execute(&buf, data)
 	if err != nil {
 		// TODO Consider writing out a nice error js field, instead of invalid js.
 		w.WriteHeader(500)

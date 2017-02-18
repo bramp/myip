@@ -2,7 +2,7 @@
 # http://www.compoundtheory.com/configuring-your-gopath-with-go-and-google-app-engine/
 #
 
-.PHONY: default install-tools debug-env check imports fmt vet lint clean test deps serve deploy
+.PHONY: default install-tools debug-env check imports fmt vet lint clean test deps serve deploy version
 
 default: serve
 
@@ -73,10 +73,17 @@ lint:
 test:
 	goapp test lib/...
 
-serve: deps
+version: src/main/version.go
+
+src/main/version.go: $(shell find src -type f ! -name "version.go")
+	# -ldflags "-X main.BuildTime `date '+%Y-%m-%d %T %Z'` -X main.Version `git rev-parse HEAD`"
+	sed -i "" "s/\(Version[^\"]*\"\)[^\"]*/\1`git rev-parse HEAD`/" src/main/version.go
+	sed -i "" "s/\(BuildTime[^\"]*\"\)[^\"]*/\1`date '+%Y-%m-%d %T %Z'`/" src/main/version.go
+
+serve: deps version
 	goapp serve $(APP_YAML)
 
-deploy: check
+deploy: check version
 	# TODO get the version number from the git-hash
 	#@read -p "What is your Project ID?: " projectID; \
 	#goapp deploy -application $$projectID $(APP_YAML)

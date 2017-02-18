@@ -21,6 +21,9 @@ var myipApp = angular.module('myip', ['ui.bootstrap'], function MyIPApp($locatio
 myipApp.controller('MyIPController', function MyIPController($scope, $http, $location) {
     MyIPController.$inject = ['$scope', '$http', '$location'];
 
+    $scope.version = VERSION;
+    $scope.buildTime = BUILDTIME;
+
     var host = $location.search().host;
     $scope.addresses = [];
 
