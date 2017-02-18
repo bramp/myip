@@ -37,18 +37,20 @@
 
         <div ng-repeat="address in addresses" class="ng-cloak panel panel-default panel-primary">
             <div class="panel-heading">
-                <h2 ng-if="address.Error">{{address.RemoteAddrFamily}}: &lt;error: {{address.Error}}&gt;</span></h2>
-                <h2 ng-if="!address.Error">{{address.RemoteAddrFamily}}: {{address.RemoteAddr}}
-                    <div class="pull-right"><button type="button" class="btn btn-default" ng-click="address.isOpen = !address.isOpen">View details &raquo;</button></div>
+                <h2><i ng-if="address.Insights.AddressMismatch" class="fa fa-exclamation-triangle"></i>
+                    {{address.RemoteAddrFamily}}:
+                    <span ng-if="address.Error">&lt;error: {{address.Error}}&gt;</span>
+                    <span ng-if="!address.Error">{{address.RemoteAddr}}
+                        <div class="pull-right"><button type="button" class="btn btn-default" ng-click="address.isOpen = !address.isOpen">View details &raquo;</button></div>
 
-                    <span ng-if="address.RemoteAddrReverse.Error">&lt;dns error: {{address.RemoteAddrReverse.Error}}&gt;</span>
-                    <span ng-if="!address.RemoteAddrReverse.Error">
-                        (
-                        <span ng-if="address.RemoteAddrReverse.Names" ng-repeat="name in address.RemoteAddrReverse.Names">{{name}}<span ng-if="!$last">, </span></span>
-                        <span ng-if="!address.RemoteAddrReverse.Names">no dns result</span>
-                        )
+                        <span ng-if="address.RemoteAddrReverse.Error">&lt;dns error: {{address.RemoteAddrReverse.Error}}&gt;</span>
+                        <span ng-if="!address.RemoteAddrReverse.Error">
+                            (
+                            <span ng-if="address.RemoteAddrReverse.Names" ng-repeat="name in address.RemoteAddrReverse.Names">{{name}}<span ng-if="!$last">, </span></span>
+                            <span ng-if="!address.RemoteAddrReverse.Names">no dns result</span>
+                            )
+                        </span>
                     </span>
-
                 </h2>
             </div>
 
@@ -59,7 +61,7 @@
 
                         <div ng-if="address.Insights.AddressMismatch" class="alert alert-warning">
                             <p class="lead">
-                                <i class="fa fa-exclamation-triangle"></i>
+                                <i class="fa fa-exclamation-triangle">&nbsp;</i>
                                 A {{address.RemoteAddrFamily}} request was sent but the server received a {{address.Insights.AddressMismatch}} request. This implies there is a proxy in the middle which could skew results.
                             </p>
                         </div>
@@ -161,7 +163,7 @@
         </div>
 
         <footer>
-            <p class="pull-right">&copy; <a href="https://bramp.net">bramp.net</a> 2017</p>
+            <p class="pull-right text-right">&copy; <a href="https://bramp.net">bramp.net</a> 2017</p>
         </footer>
     </div>
 
