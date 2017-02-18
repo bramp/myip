@@ -20,11 +20,11 @@ import (
 	"net"
 	"time"
 
+	"fmt"
 	domainr "github.com/domainr/whois"
 	"golang.org/x/net/context"
 	"google.golang.org/appengine/log"
 	"google.golang.org/appengine/socket"
-	"fmt"
 )
 
 const (
