@@ -13,24 +13,25 @@ cache:
   directories:
     - $HOME/.cache
 
-#before_install:
-#  - go get github.com/mattn/goveralls
-#  - go get golang.org/x/tools/cmd/cover
-#
-#after_success:
-#  - $HOME/gopath/bin/goveralls -service=travis-ci
-
 before_install:
   - export CACHE=$HOME/.cache
   - mkdir -p $CACHE
 
+  # Fetch the Go Appengine SDK
   - export FILE=$(curl https://storage.googleapis.com/appengine-sdks/ | grep -o 'go_appengine_sdk_linux_amd64-[^\<]*' | sort -t. -k 1,1n -k 2,2n -k 3,3n -k 4,4n | tail -1)
   - if ! [ -f "$CACHE/$FILE" ]; then curl https://storage.googleapis.com/appengine-sdks/featured/$FILE -o "$CACHE/$FILE"; fi
   - unzip -q "$CACHE/$FILE"
   - export PATH=$PATH:$PWD/go_appengine/
 
+  - make install-tools
+
 # Run build and tests
 #script:
+#  - make
 #  - ./go_appengine/goapp test ./tests; # If you are testing
 #  - ./go_appengine/goapp build ./packagedir; # Wherever you keep your stuff
+
+#after_success:
+#  - $HOME/gopath/bin/goveralls -service=travis-ci
+
 

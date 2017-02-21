@@ -2,9 +2,9 @@
 # http://www.compoundtheory.com/configuring-your-gopath-with-go-and-google-app-engine/
 #
 
-.PHONY: default install-tools debug-env check imports fmt vet lint clean test deps serve deploy version
+.PHONY: default install-tools check-update debug-env check imports fmt vet lint clean test deps serve deploy version
 
-default: serve
+default: test
 
 #Fixes a bug in OSX Make with exporting PATH environment variables
 #See: http://stackoverflow.com/questions/11745634/setting-path-variable-from-inside-makefile-does-not-work-for-make-3-81
@@ -35,15 +35,14 @@ node_modules: package.json
 	touch $@
 
 install-tools: node_modules
-	#goapp get github.com/golang/lint/golint
-	go get github.com/golang/lint/golint
-	go get golang.org/x/tools/cmd/goimports
+	go get -u github.com/golang/lint/golint
+	go get -u golang.org/x/tools/cmd/goimports
 
 	# We don't need the source for the tools
 	#rm -rf $(ROOT)/vendor/src/golang.org/lint/golint
 	#rm -rf $(ROOT)/vendor/src/github.com/golang/x/tools/cmd/goimports
 
-check-updates: node_modules
+check-updates: install-tools
 	ncu -m npm
 	cd src/appengine; ncu -m bower
 	# TODO Write goapp get -u script
@@ -53,11 +52,15 @@ src/appengine/regexes.yaml:
 	curl -o "$@" -z "$@" "https://raw.githubusercontent.com/ua-parser/uap-core/master/regexes.yaml"
 
 deps: node_modules src/appengine/regexes.yaml
-	for pkg in github.com/miekg/dns github.com/gorilla/handlers github.com/gorilla/mux       \
-		github.com/domainr/whois golang.org/x/net/context google.golang.org/appengine/socket \
-		github.com/ua-parser/uap-go/uaparser github.com/kylelemons/godebug/pretty;           \
+	for pkg in github.com/miekg/dns github.com/gorilla/handlers github.com/gorilla/mux   \
+		github.com/domainr/whois golang.org/x/net/context                                \
+		github.com/golang/protobuf/proto google.golang.org/appengine/socket              \
+		github.com/ua-parser/uap-go/uaparser github.com/kylelemons/godebug/pretty;       \
 	do \
-		if [ ! -d $(ROOT)/vendor/src/$$pkg ]; then goapp get $$pkg; fi \
+		if [ ! -d $(ROOT)/vendor/src/$$pkg ]; then \
+		    echo Getting $$pkg; \
+			goapp get -u $$pkg; \
+		fi \
 	done
 
 check: deps fmt vet lint test
@@ -74,6 +77,8 @@ lint:
 	golint -set_exit_status src/...
 
 test: check
+	# Test both standard go, and appengine go
+	# go test lib/...
 	goapp test lib/...
 
 version: src/lib/myip/version.go
@@ -92,3 +97,9 @@ deploy: check
 	#goapp deploy -application $$projectID $(APP_YAML)
 	goapp deploy -application myip-158305 -version v1 $(APP_YAML)
 
+clean:
+	rm -rf vendor/src
+	rm -rf src/appengine/static/bower_components
+
+veryclean: clean
+	rm -rf node_modules
