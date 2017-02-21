@@ -3,19 +3,24 @@
 <head>
     <meta charset="utf-8">
     <title>(A better) What's My IP Address?</title>
+
+    <meta name=description content="Determines both your IPv4 and IPv6 addresses, issues WHOIS and reverse DNS lookups, and shows all your HTTP headers." />
+    <meta name=author content="Andrew Brampton" />
+    <meta name=viewport content="width=device-width,initial-scale=1" />
+
+    <!-- Base needed to support Angular's html5Mode -->
     <base href="/" />
 
+    <!-- TODO minify / combine these files -->
     <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.css" />
     <link rel="stylesheet" href="bower_components/angular/angular-csp.css" />
     <link rel="stylesheet" href="bower_components/angular-bootstrap/ui-bootstrap-csp.css" />
     <link rel="stylesheet" href="github-corners.css" />
     <link rel="stylesheet" href="bower_components/components-font-awesome/css/font-awesome.min.css" />
+    <link rel="stylesheet" href="app.css" />
 
     <script src="bower_components/angular/angular.min.js"></script>
     <script src="bower_components/angular-bootstrap/ui-bootstrap.min.js"></script>
-
-    <link rel="stylesheet" href="app.css" />
-
     <script src="config.js"></script>
     <script src="app.js"></script>
 </head>

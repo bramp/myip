@@ -1,4 +1,4 @@
-package main
+package myip
 
 // This file is hacked by a sed/Makefile. In future if goapp supports it, use the ldflags
 // https://code.google.com/p/googleappengine/issues/detail?id=13562

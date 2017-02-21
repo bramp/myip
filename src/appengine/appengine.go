@@ -14,8 +14,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Google App Engine (Standard) specific implementation
-package main
+// Package appengine provides a Google App Engine (Standard) specific implementation of myip
+package appengine
 
 import (
 	"fmt"
@@ -30,6 +30,7 @@ import (
 	"github.com/ua-parser/uap-go/uaparser"
 	"lib/conf"
 	"lib/location"
+	"lib/myip"
 )
 
 func ternary(b bool, t, f string) string {
@@ -37,6 +38,28 @@ func ternary(b bool, t, f string) string {
 		return t
 	}
 	return f
+}
+
+var debugConfig = &conf.Config{
+	Host:  "http://localhost:8080",
+	Host4: "http://127.0.0.1:8080",
+	Host6: "http://[::1]:8080",
+
+	MapsAPIKey: "AIzaSyA6-HIkxuJEX6Hf3rzVx07no32YM3N5V9s",
+
+	DisallowedHeaders: []string{"none"},
+}
+
+var prodConfig = &conf.Config{
+	Host:  "http://ip.bramp.net",
+	Host4: "http://ip4.bramp.net",
+	Host6: "http://ip6.bramp.net",
+
+	MapsAPIKey: "AIzaSyA6-HIkxuJEX6Hf3rzVx07no32YM3N5V9s",
+
+	// If behind CloudFlare use the following:
+	//IPHeader: "Cf-Connecting-Ip",
+	//RequestIDHeader: "Cf-Ray",
 }
 
 var appengineDefaultConfig = &conf.Config{
@@ -74,7 +97,11 @@ var appengineDefaultConfig = &conf.Config{
 	},
 }
 
-func loadConfig() *conf.Config {
+type server struct {
+	myip.DefaultServer
+}
+
+func init() {
 	config := prodConfig
 	if appengine.IsDevAppServer() {
 		config = debugConfig
@@ -86,15 +113,17 @@ func loadConfig() *conf.Config {
 		panic(err.Error())
 	}
 
-	return config
+	myip.Register(&server{
+		myip.DefaultServer{config},
+	})
 }
 
 // TODO Make this not app engine specific by factoring out the HandleCode.
-func handleMyIP(req *http.Request) (interface{}, error) {
+func (app *server) HandleMyIP(req *http.Request) (*myip.Response, error) {
 
 	ctx := appengine.NewContext(req)
 
-	host, err := getRemoteAddr(req)
+	host, err := app.GetRemoteAddr(req)
 	if err != nil {
 		return nil, fmt.Errorf("getting remote addr: %s", err)
 	}
@@ -122,15 +151,15 @@ func handleMyIP(req *http.Request) (interface{}, error) {
 		userAgentClient = ua.DetermineUA(useragent)
 	}
 
-	locationResponse := location.Handle(config, req)
+	locationResponse := location.Handle(app.Config, req)
 
-	requestID := req.Header.Get(config.RequestIDHeader)
+	requestID := req.Header.Get(app.Config.RequestIDHeader)
 
-	for _, remove := range config.DisallowedHeaders {
+	for _, remove := range app.Config.DisallowedHeaders {
 		req.Header.Del(remove)
 	}
 
-	return addInsights(req, &myIPResponse{
+	return &myip.Response{
 		RequestID: requestID,
 
 		RemoteAddr:        host,
@@ -147,5 +176,5 @@ func handleMyIP(req *http.Request) (interface{}, error) {
 		URL:    req.URL.String(),
 		Proto:  req.Proto,
 		Header: req.Header,
-	}), nil
+	}, nil
 }

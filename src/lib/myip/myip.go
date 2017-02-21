@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// myip is a web application to returns the client's IP address and other information.
+// Package myip is a web application to returns the client's IP address and other information.
 // by Andrew Brampton (https://bramp.net/)
-package main
+package myip
 
 import (
 	"encoding/json"
@@ -23,11 +23,9 @@ import (
 	"net/http"
 	"os"
 
-	"text/template"
-
-	"bytes"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
+
 	"github.com/ua-parser/uap-go/uaparser"
 	"lib/conf"
 	"lib/dns"
@@ -35,35 +33,38 @@ import (
 	"lib/whois"
 )
 
-var debugConfig = &conf.Config{
-	Host:  "http://localhost:8080",
-	Host4: "http://127.0.0.1:8080",
-	Host6: "http://[::1]:8080",
+/*
+type Server struct {
+	Config func() *config.Config
+	HandleMyIP func(req *http.Request) (interface{}, error)
+	HandleConfigJs func (w http.ResponseWriter, _ *http.Request)
+	GetRemoteAddr func(req *http.Request) (string, error)
+	//ServeJson func(req*http.Request) (interface{}, error)
+}
+*/
 
-	MapsAPIKey: "AIzaSyA6-HIkxuJEX6Hf3rzVx07no32YM3N5V9s",
+// Server is the interface all instances of the myip application should implement.
+type Server interface {
+	GetRemoteAddr(req *http.Request) (string, error)
 
-	DisallowedHeaders: []string{"none"},
+	HandleMyIP(req *http.Request) (*Response, error)
+	HandleConfigJs(w http.ResponseWriter, _ *http.Request)
+
+	WriteJSON(w http.ResponseWriter, obj interface{}, err error)
 }
 
-var prodConfig = &conf.Config{
-	Host:  "http://ip.bramp.net",
-	Host4: "http://ip4.bramp.net",
-	Host6: "http://ip6.bramp.net",
-
-	MapsAPIKey: "AIzaSyA6-HIkxuJEX6Hf3rzVx07no32YM3N5V9s",
-
-	// If behind CloudFlare use the following:
-	//IPHeader: "Cf-Connecting-Ip",
-	//RequestIDHeader: "Cf-Ray",
+// DefaultServer is a default implementation of Server with some good defaults.
+type DefaultServer struct {
+	Config *conf.Config
 }
 
-var config = loadConfig()
-
-type errResponse struct {
+// ErrResponse is returned in the case of a error.
+type ErrResponse struct {
 	Error string
 }
 
-type myIPResponse struct {
+// Response is a normal response.
+type Response struct {
 	RequestID string `json:",omitempty"`
 
 	RemoteAddr        string
@@ -85,15 +86,22 @@ type myIPResponse struct {
 	Insights map[string]string `json:",omitempty"`
 }
 
-func init() {
-	registerHandlers()
-}
+type objHandler func(req *http.Request) (interface{}, error)
 
-func registerHandlers() {
+// Register this myip.Server. Should only be called once.
+func Register(app Server) {
 	r := mux.NewRouter()
 
-	r.Methods("GET").Path("/json").Handler(app(handleMyIP))
-	r.Methods("GET").Path("/config.js").HandlerFunc(handleConfigJs)
+	mainHandle := func(w http.ResponseWriter, req *http.Request) {
+		response, err := app.HandleMyIP(req)
+		if err != nil {
+			response = addInsights(req, response)
+		}
+		app.WriteJSON(w, response, err)
+	}
+
+	r.Methods("GET").Path("/json").HandlerFunc(mainHandle)
+	r.Methods("GET").Path("/config.js").HandlerFunc(app.HandleConfigJs)
 
 	// App Engine and Compute Engine health checks.
 	// TODO only set if compiled for app engine
@@ -103,17 +111,18 @@ func registerHandlers() {
 	http.Handle("/", handlers.CombinedLoggingHandler(os.Stderr, r))
 }
 
-func getRemoteAddr(req *http.Request) (string, error) {
-
+// GetRemoteAddr returns the remote address, either the real one, or one passed via a header, or
+// finally if in debug one passed as a query param.
+func (s *DefaultServer) GetRemoteAddr(req *http.Request) (string, error) {
 	remoteAddr := req.RemoteAddr
 
 	// If debug allow replacing the host
-	if host := req.URL.Query().Get("host"); host != "" && config.Debug {
+	if host := req.URL.Query().Get("host"); host != "" && s.Config.Debug {
 		return host, nil
 	}
 
-	if config.IPHeader != "" {
-		if addr := req.Header.Get(config.IPHeader); addr != "" {
+	if s.Config.IPHeader != "" {
+		if addr := req.Header.Get(s.Config.IPHeader); addr != "" {
 			remoteAddr = addr
 		}
 	}
@@ -133,67 +142,14 @@ func healthCheckHandler(w http.ResponseWriter, _ *http.Request) {
 	fmt.Fprint(w, "ok")
 }
 
-var configTemplate = `
-var VERSION = "{{.Version}}";
-var BUILDTIME = "{{.BuildTime}}";
-
-var MAIN_HOST = "{{.Host}}";
-
-var SERVERS = {
-   "IPv4": "{{.Host4}}",
-   "IPv6": "{{.Host6}}"
-};
-
-var MAPS_API_KEY = "{{.MapsAPIKey}}";`
-
-type configAndVersion struct {
-	*conf.Config
-	Version   string
-	BuildTime string
-}
-
-func handleConfigJs(w http.ResponseWriter, _ *http.Request) {
-	tmpl, err := template.New("config").Parse(configTemplate)
-
+// WriteJSON takes the given obj and error, and returns appropriate JSON to the user
+func (s *DefaultServer) WriteJSON(w http.ResponseWriter, obj interface{}, err error) {
 	if err != nil {
 		w.WriteHeader(500)
-		w.Write([]byte(err.Error()))
-		return
-	}
-
-	data := struct {
-		*conf.Config
-		Version   string
-		BuildTime string
-	}{
-		config, Version, BuildTime,
-	}
-
-	// Buffer the output so we can put a error at the front if it fails
-	var buf bytes.Buffer
-	err = tmpl.Execute(&buf, data)
-	if err != nil {
-		// TODO Consider writing out a nice error js field, instead of invalid js.
-		w.WriteHeader(500)
-		w.Write([]byte(err.Error()))
-		return
-	}
-
-	// TODO Eventually add a long cache-expire time
-	w.Header().Set("Content-Type", "text/javascript")
-	buf.WriteTo(w)
-}
-
-type app func(*http.Request) (interface{}, error)
-
-func (fn app) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	obj, err := fn(r)
-	if err != nil {
-		w.WriteHeader(500)
-		obj = &errResponse{err.Error()}
+		obj = &ErrResponse{err.Error()}
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("Access-Control-Allow-Origin", config.Host)
+	w.Header().Set("Access-Control-Allow-Origin", s.Config.Host)
 	json.NewEncoder(w).Encode(obj)
 }

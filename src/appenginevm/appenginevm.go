@@ -15,7 +15,7 @@
 // limitations under the License.
 
 // Google App Engine (Flex) specific implementation
-// TODO Actually get working
+// TODO Actually finish this, and get it working.
 package main
 
 import (
@@ -26,7 +26,6 @@ func main() {
 	appengine.Main()
 }
 
-/*
 func handleWhois(ipAddr string) (*whoisResponse) {
 	body, err := queryIpWhois(ipAddr)
 	resp := &whoisResponse{
@@ -40,7 +39,7 @@ func handleWhois(ipAddr string) (*whoisResponse) {
 	return resp
 }
 
-func handleReverseDns(ipAddr string) (*dnsResponse) {
+func handleReverseDNS(ipAddr string) (*dnsResponse) {
 	names, err := net.LookupAddr(ipAddr)
 	resp := &dnsResponse{
 		Query: ipAddr,
@@ -76,9 +75,9 @@ func queryWhois(query, host string) (string, error) {
 }
 
 
-// queryIpWhois issues two whois queries, the first to find the right whois server, and the 2nd to
+// queryIPWhois issues two whois queries, the first to find the right whois server, and the 2nd to
 // that server.
-func queryIpWhois(ipAddr string) (string, error) {
+func queryIPWhois(ipAddr string) (string, error) {
 	response, err := queryWhois(ipAddr, "whois.iana.org")
 
 	m, err := whois.ParseWhois(response)
@@ -93,4 +92,3 @@ func queryIpWhois(ipAddr string) (string, error) {
 
 	return queryWhois(ipAddr, host)
 }
-*/

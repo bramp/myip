@@ -9,6 +9,6 @@
     "npm-check-updates": "2.10.2"
   },
   "scripts": {
-    "postinstall": "cd src/main; bower install"
+    "postinstall": "cd src/appengine; bower install"
   }
 }

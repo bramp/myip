@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+package myip
 
 import (
 	"net"
@@ -31,7 +31,7 @@ func addressFamily(addr string) string {
 	return "Unknown"
 }
 
-func addInsights(req *http.Request, resp *myIPResponse) *myIPResponse {
+func addInsights(req *http.Request, resp *Response) *Response {
 	resp.Insights = make(map[string]string)
 
 	if s := req.Header.Get("Via"); strings.Contains(s, "Chrome-Compression-Proxy") {

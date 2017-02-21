@@ -22,7 +22,7 @@ export GOPATH
 PATH := $(ROOT)/vendor/bin:$(PATH)
 export PATH
 
-APP_YAML = src/main/app.yaml
+APP_YAML = src/appengine/app.yaml
 
 # Prints out all the GO environment variables. Useful to see the state
 # of what is going on with the GOPATH
@@ -35,21 +35,24 @@ node_modules: package.json
 	touch $@
 
 install-tools: node_modules
+	#goapp get github.com/golang/lint/golint
 	go get github.com/golang/lint/golint
 	go get golang.org/x/tools/cmd/goimports
-	rm -rf $(ROOT)/vendor/src/golang.org/lint/golint
-	rm -rf $(ROOT)/vendor/src/github.com/golang/x/tools/cmd/goimports
+
+	# We don't need the source for the tools
+	#rm -rf $(ROOT)/vendor/src/golang.org/lint/golint
+	#rm -rf $(ROOT)/vendor/src/github.com/golang/x/tools/cmd/goimports
 
 check-updates: node_modules
 	ncu -m npm
-	cd src/main; ncu -m bower
+	cd src/appengine; ncu -m bower
 	# TODO Write goapp get -u script
 
 # UA profile data
-src/main/regexes.yaml:
+src/appengine/regexes.yaml:
 	curl -o "$@" -z "$@" "https://raw.githubusercontent.com/ua-parser/uap-core/master/regexes.yaml"
 
-deps: node_modules src/main/regexes.yaml
+deps: node_modules src/appengine/regexes.yaml
 	for pkg in github.com/miekg/dns github.com/gorilla/handlers github.com/gorilla/mux       \
 		github.com/domainr/whois golang.org/x/net/context google.golang.org/appengine/socket \
 		github.com/ua-parser/uap-go/uaparser github.com/kylelemons/godebug/pretty;           \
@@ -60,7 +63,7 @@ deps: node_modules src/main/regexes.yaml
 check: deps fmt vet lint test
 
 fmt:
-	goapp fmt main lib/...
+	goapp fmt appengine lib/...
 
 vet:
 	# Due to https://github.com/golang/go/issues/17571 go vet doesn't support vendored directories.
@@ -70,20 +73,20 @@ vet:
 lint:
 	golint -set_exit_status src/...
 
-test:
+test: check
 	goapp test lib/...
 
-version: src/main/version.go
+version: src/lib/myip/version.go
 
-src/main/version.go: $(shell find src -type f ! -name "version.go")
+src/lib/myip/version.go: $(shell find src -type f ! -name "version.go")
 	# -ldflags "-X main.BuildTime `date '+%Y-%m-%d %T %Z'` -X main.Version `git rev-parse HEAD`"
-	sed -i "" "s/\(Version[^\"]*\"\)[^\"]*/\1`git rev-parse HEAD`/" src/main/version.go
-	sed -i "" "s/\(BuildTime[^\"]*\"\)[^\"]*/\1`date '+%Y-%m-%d %T %Z'`/" src/main/version.go
+	sed -i "" "s/\(Version[^\"]*\"\)[^\"]*/\1`git rev-parse HEAD`/" src/lib/myip/version.go
+	sed -i "" "s/\(BuildTime[^\"]*\"\)[^\"]*/\1`date '+%Y-%m-%d %T %Z'`/" src/lib/myip/version.go
 
-serve: deps version
+serve:
 	goapp serve $(APP_YAML)
 
-deploy: check version
+deploy: check
 	# TODO get the version number from the git-hash
 	#@read -p "What is your Project ID?: " projectID; \
 	#goapp deploy -application $$projectID $(APP_YAML)
