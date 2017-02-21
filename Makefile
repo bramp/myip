@@ -95,7 +95,7 @@ deploy: check
 	# TODO get the version number from the git-hash
 	#@read -p "What is your Project ID?: " projectID; \
 	#goapp deploy -application $$projectID $(APP_YAML)
-	goapp deploy -application myip-158305 -version v1 $(APP_YAML)
+	goapp deploy -application myip-158305 -version v3 $(APP_YAML)
 
 clean:
 	rm -rf vendor/src
