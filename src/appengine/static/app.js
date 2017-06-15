@@ -29,7 +29,7 @@ myipApp.controller('MyIPController', function MyIPController($scope, $http, $loc
 
     Object.keys(SERVERS).forEach(function(family) {
         var server = SERVERS[family];
-        var url = server + '/json?family=' + family;
+        var url = $location.protocol() + "://" + server + '/json?family=' + family;
 
         if (host) {
             url = url + "&host=" + host

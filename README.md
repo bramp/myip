@@ -11,9 +11,9 @@ Add these when available:
 Determines both your IPv4 and IPv6 addresses, issues WHOIS and reverse DNS lookups, and shows all
 your HTTP headers.
 
-Check it in action: [ip.bramp.net](http://ip.bramp.net/) or [read about it on my blog](https://blog.bramp.net/post/2017/02/20/building-a-better-whats-my-ip-site/).
+Check it in action: [ip.bramp.net](https://ip.bramp.net/) or [read about it on my blog](https://blog.bramp.net/post/2017/02/20/building-a-better-whats-my-ip-site/).
 
-[![ip.bramp.net screenshot](screenshot.png)](http://ip.bramp.net/)
+[![ip.bramp.net screenshot](screenshot.png)](https://ip.bramp.net/)
 
 This project was quite literally hacked out in one weekend, and was my first App Engine project.
 

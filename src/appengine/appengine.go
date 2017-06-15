@@ -41,9 +41,9 @@ func ternary(b bool, t, f string) string {
 }
 
 var debugConfig = &conf.Config{
-	Host:  "http://localhost:8080",
-	Host4: "http://127.0.0.1:8080",
-	Host6: "http://[::1]:8080",
+	Host:  "localhost:8080",
+	Host4: "127.0.0.1:8080",
+	Host6: "[::1]:8080",
 
 	MapsAPIKey: "AIzaSyA6-HIkxuJEX6Hf3rzVx07no32YM3N5V9s",
 
@@ -51,9 +51,9 @@ var debugConfig = &conf.Config{
 }
 
 var prodConfig = &conf.Config{
-	Host:  "http://ip.bramp.net",
-	Host4: "http://ip4.bramp.net",
-	Host6: "http://ip6.bramp.net",
+	Host:  "ip.bramp.net",
+	Host4: "ip4.bramp.net",
+	Host6: "ip6.bramp.net",
 
 	MapsAPIKey: "AIzaSyA6-HIkxuJEX6Hf3rzVx07no32YM3N5V9s",
 

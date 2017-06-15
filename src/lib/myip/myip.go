@@ -50,7 +50,7 @@ type Server interface {
 	HandleMyIP(req *http.Request) (*Response, error)
 	HandleConfigJs(w http.ResponseWriter, _ *http.Request)
 
-	WriteJSON(w http.ResponseWriter, obj interface{}, err error)
+	WriteJSON(w http.ResponseWriter, req *http.Request, obj interface{}, err error)
 }
 
 // DefaultServer is a default implementation of Server with some good defaults.
@@ -97,7 +97,7 @@ func Register(app Server) {
 		if err != nil {
 			response = addInsights(req, response)
 		}
-		app.WriteJSON(w, response, err)
+		app.WriteJSON(w, req, response, err)
 	}
 
 	r.Methods("GET").Path("/json").HandlerFunc(mainHandle)
@@ -143,13 +143,18 @@ func healthCheckHandler(w http.ResponseWriter, _ *http.Request) {
 }
 
 // WriteJSON takes the given obj and error, and returns appropriate JSON to the user
-func (s *DefaultServer) WriteJSON(w http.ResponseWriter, obj interface{}, err error) {
+func (s *DefaultServer) WriteJSON(w http.ResponseWriter, req *http.Request, obj interface{}, err error) {
 	if err != nil {
 		w.WriteHeader(500)
 		obj = &ErrResponse{err.Error()}
 	}
 
+	scheme := "http://"
+	if req.TLS != nil {
+		scheme = "https://"
+	}
+
 	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("Access-Control-Allow-Origin", s.Config.Host)
+	w.Header().Set("Access-Control-Allow-Origin", scheme+s.Config.Host)
 	json.NewEncoder(w).Encode(obj)
 }
