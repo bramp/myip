@@ -31,6 +31,7 @@ import (
 	"lib/conf"
 	"lib/location"
 	"lib/myip"
+	"sync"
 )
 
 func ternary(b bool, t, f string) string {
@@ -118,10 +119,21 @@ func init() {
 	})
 }
 
+// addToWg executes the function in a new gorountine and adds it to the WaitGroup, calling wg.Done
+// when finished. This makes it a little eaiser to use the WaitGroup.
+func addToWg(wg *sync.WaitGroup, f func()) {
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		f()
+	}()
+}
+
 // TODO Make this not app engine specific by factoring out the HandleCode.
 func (app *server) HandleMyIP(req *http.Request) (*myip.Response, error) {
 
 	ctx := appengine.NewContext(req)
+	wg := &sync.WaitGroup{}
 
 	host, err := app.GetRemoteAddr(req)
 	if err != nil {
@@ -135,29 +147,43 @@ func (app *server) HandleMyIP(req *http.Request) (*myip.Response, error) {
 
 	var dnsResp *dns.Response
 	var whoisResp *whois.Response
+	var locationResponse *location.Response
+	var userAgentClient *uaparser.Client // TODO change this to be a ua.Response
 
 	if host != "" {
 		if req.URL.Query().Get("reverse") != "false" {
-			dnsResp = dns.HandleReverseDNS(ctx, host)
+			addToWg(wg, func() {
+				dnsResp = dns.HandleReverseDNS(ctx, host)
+			})
 		}
 
 		if req.URL.Query().Get("whois") != "false" {
-			whoisResp = whois.Handle(ctx, host)
+			addToWg(wg, func() {
+				whoisResp = whois.Handle(ctx, host)
+			})
 		}
 	}
 
-	var userAgentClient *uaparser.Client
-	if useragent := req.Header.Get("User-Agent"); useragent != "" {
-		userAgentClient = ua.DetermineUA(useragent)
+	if req.URL.Query().Get("ua") != "false" {
+		if useragent := req.Header.Get("User-Agent"); useragent != "" {
+			addToWg(wg, func() {
+				userAgentClient = ua.DetermineUA(useragent)
+			})
+		}
 	}
 
-	locationResponse := location.Handle(app.Config, req)
+	addToWg(wg, func() {
+		locationResponse = location.Handle(app.Config, req)
+	})
 
 	requestID := req.Header.Get(app.Config.RequestIDHeader)
 
 	for _, remove := range app.Config.DisallowedHeaders {
 		req.Header.Del(remove)
 	}
+
+	// Wait for all the responses to come back
+	wg.Wait()
 
 	return &myip.Response{
 		RequestID: requestID,
