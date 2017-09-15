@@ -1,0 +1,8 @@
+# Not the real app.yaml (thats in src/appengine/app.yaml), but this is here to force the goapp tool
+# to use go version 1.8.
+runtime: go
+api_version: go1.8
+
+handlers:
+- url: /
+  script: _go_app

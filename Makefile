@@ -62,10 +62,6 @@ deps: node_modules
 		fi \
 	done
 
-	# Force miekg/dns to a specific version (due to latter versions not supporting app engine)
-	# https://github.com/miekg/dns/issues/515
-	git -C $(ROOT)/vendor/src/github.com/miekg/dns checkout 2d7eb4f050c25a6d4401af9abd939d42ac773331
-
 check: deps fmt vet lint
 
 fmt:
