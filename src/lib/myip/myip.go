@@ -83,11 +83,13 @@ type Response struct {
 
 type objHandler func(req *http.Request) (interface{}, error)
 
-func isCurl(req *http.Request, _ *mux.RouteMatch) bool {
-	return strings.HasPrefix(req.Header.Get("User-Agent"), "curl/")
+// isCli returns true if the request is coming from a cli tool, such as curl, or wget
+func isCli(req *http.Request, _ *mux.RouteMatch) bool {
+	ua := req.Header.Get("User-Agent")
+	return strings.HasPrefix(ua, "curl/") || strings.HasPrefix(ua, "Wget/")
 }
 
-var curlTmpl = template.Must(template.New("test").Parse(
+var cliTmpl = template.Must(template.New("test").Parse(
 	"IP: {{.RemoteAddr}}\n" +
 		"{{range .RemoteAddrReverse.Names}}" +
 		"DNS: {{.}}\n" +
@@ -113,9 +115,9 @@ func Register(app Server) {
 		http.ServeFile(w, req, "static/index.html")
 	}
 
-	curlHandler := func(w http.ResponseWriter, req *http.Request) {
+	cliHandler := func(w http.ResponseWriter, req *http.Request) {
 		response, err := app.HandleMyIP(req)
-		app.WriteText(w, req, curlTmpl, response, err)
+		app.WriteText(w, req, cliTmpl, response, err)
 	}
 
 	jsonHandler := func(w http.ResponseWriter, req *http.Request) {
@@ -126,7 +128,7 @@ func Register(app Server) {
 		app.WriteJSON(w, req, response, err)
 	}
 
-	r.MatcherFunc(isCurl).HandlerFunc(curlHandler)
+	r.MatcherFunc(isCli).HandlerFunc(cliHandler)
 
 	r.HandleFunc("/", rootHandler)
 	r.HandleFunc("/json", jsonHandler)
