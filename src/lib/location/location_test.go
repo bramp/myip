@@ -36,5 +36,4 @@ func TestParseLatLong(t *testing.T) {
 			t.Errorf("parseLatLong(%q) = (%v, %v), want (%v, %v)", test.input, lat, long, test.wantLat, test.wantLong)
 		}
 	}
-
 }

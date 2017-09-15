@@ -26,11 +26,11 @@ func main() {
 	appengine.Main()
 }
 
-func handleWhois(ipAddr string) (*whoisResponse) {
+func handleWhois(ipAddr string) *whoisResponse {
 	body, err := queryIpWhois(ipAddr)
 	resp := &whoisResponse{
 		Query: ipAddr,
-		Body: body,
+		Body:  body,
 	}
 	if err != nil {
 		resp.Error = err.Error()
@@ -39,7 +39,7 @@ func handleWhois(ipAddr string) (*whoisResponse) {
 	return resp
 }
 
-func handleReverseDNS(ipAddr string) (*dnsResponse) {
+func handleReverseDNS(ipAddr string) *dnsResponse {
 	names, err := net.LookupAddr(ipAddr)
 	resp := &dnsResponse{
 		Query: ipAddr,
