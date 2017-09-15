@@ -90,7 +90,6 @@ make test
 - [ ] Add Make test (which checks with different build tags, e.g macos,appengine linux,appengine)
 - [ ] Implement a App Engine Flex, and other PaaS environments
 - [ ] Minify all css and js and combine into one file
-- [ ] Put behind SSL (grrr App Engine's lack of Let's Encrypt)
 - [ ] Do better at determining the root cause errors. e.g If both IPv4/IPv6 fail, then perhaps problem with the site. If IPv6 fails after 30 seconds, perhaps problem with IPv6 connectivity.
 
 ## Licence (Apache 2)
