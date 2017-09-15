@@ -24,6 +24,8 @@ export PATH
 
 APP_YAML = src/appengine/app.yaml
 
+NODE_MODULES := $(ROOT)/node_modules/.bin
+
 # Prints out all the GO environment variables. Useful to see the state
 # of what is going on with the GOPATH
 debug-env:
@@ -44,8 +46,8 @@ install-tools: node_modules
 	#rm -rf $(ROOT)/vendor/src/github.com/golang/x/tools/cmd/goimports
 
 check-updates: install-tools
-	ncu -m npm
-	cd src/appengine; ncu -m bower
+	$(NODE_MODULES)/ncu -m npm
+	cd src/appengine; $(NODE_MODULES)/ncu -m bower
 	# TODO Write goapp get -u script
 
 deps: node_modules
