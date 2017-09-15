@@ -67,6 +67,19 @@ To start up a local instance, just execute:
 make serve
 ```
 
+To test:
+```bash
+make test
+```
+
+### Libraries
+
+To keep libraries up to date run:
+```bash
+make veryclean
+make test
+```
+
 
 ## TODO
 
