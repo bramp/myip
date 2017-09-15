@@ -31,17 +31,9 @@ import (
 	"lib/dns"
 	"lib/location"
 	"lib/whois"
+	"strings"
+	"text/template"
 )
-
-/*
-type Server struct {
-	Config func() *config.Config
-	HandleMyIP func(req *http.Request) (interface{}, error)
-	HandleConfigJs func (w http.ResponseWriter, _ *http.Request)
-	GetRemoteAddr func(req *http.Request) (string, error)
-	//ServeJson func(req*http.Request) (interface{}, error)
-}
-*/
 
 // Server is the interface all instances of the myip application should implement.
 type Server interface {
@@ -50,7 +42,10 @@ type Server interface {
 	HandleMyIP(req *http.Request) (*Response, error)
 	HandleConfigJs(w http.ResponseWriter, _ *http.Request)
 
+	// TODO This WriteJSON method doesn't seem appropriate for the Server interface, however, it is
+	// only here all the Server config to be used correctly. Consider Refactoring.
 	WriteJSON(w http.ResponseWriter, req *http.Request, obj interface{}, err error)
+	WriteText(w http.ResponseWriter, req *http.Request, tmpl *template.Template, data interface{}, err error)
 }
 
 // DefaultServer is a default implementation of Server with some good defaults.
@@ -88,11 +83,42 @@ type Response struct {
 
 type objHandler func(req *http.Request) (interface{}, error)
 
+func isCurl(req *http.Request, _ *mux.RouteMatch) bool {
+	return strings.HasPrefix(req.Header.Get("User-Agent"), "curl/")
+}
+
+var curlTmpl = template.Must(template.New("test").Parse(
+	"IP: {{.RemoteAddr}}\n" +
+		"{{range .RemoteAddrReverse.Names}}" +
+		"DNS: {{.}}\n" +
+		"{{end}}\n" +
+		"WHOIS:\n" +
+		"{{.RemoteAddrWhois.Body}}\n\n" +
+		"Location: " +
+		"{{.Location.City}} {{.Location.Region}} {{.Location.Country}}" +
+		"{{if (and (ne .Location.Lat 0.0) (ne .Location.Long 0.0))}} ({{.Location.Lat}}, {{.Location.Long}}) {{end}}\n\n" +
+		"ID: {{.RequestID}}\n"))
+
 // Register this myip.Server. Should only be called once.
 func Register(app Server) {
 	r := mux.NewRouter()
 
-	mainHandle := func(w http.ResponseWriter, req *http.Request) {
+	rootHandler := func(w http.ResponseWriter, req *http.Request) {
+		// TODO Find CSP generator to make the next line shorter, and less error prone
+		w.Header().Add("Content-Security-Policy", "default-src 'self';"+
+			" connect-src *;"+
+			" script-src 'self' www.google-analytics.com;"+
+			" img-src data: 'self' www.google-analytics.com maps.googleapis.com;")
+
+		http.ServeFile(w, req, "static/index.html")
+	}
+
+	curlHandler := func(w http.ResponseWriter, req *http.Request) {
+		response, err := app.HandleMyIP(req)
+		app.WriteText(w, req, curlTmpl, response, err)
+	}
+
+	jsonHandler := func(w http.ResponseWriter, req *http.Request) {
 		response, err := app.HandleMyIP(req)
 		if err != nil {
 			response = addInsights(req, response)
@@ -100,12 +126,15 @@ func Register(app Server) {
 		app.WriteJSON(w, req, response, err)
 	}
 
-	r.Methods("GET").Path("/json").HandlerFunc(mainHandle)
-	r.Methods("GET").Path("/config.js").HandlerFunc(app.HandleConfigJs)
+	r.MatcherFunc(isCurl).HandlerFunc(curlHandler)
+
+	r.HandleFunc("/", rootHandler)
+	r.HandleFunc("/json", jsonHandler)
+	r.HandleFunc("/config.js", app.HandleConfigJs)
 
 	// App Engine and Compute Engine health checks.
 	// TODO only set if compiled for app engine
-	r.Methods("GET").Path("/_ah/health").HandlerFunc(healthCheckHandler)
+	r.Path("/_ah/health").HandlerFunc(healthCheckHandler)
 
 	// Log all requests using the standard Apache format.
 	http.Handle("/", handlers.CombinedLoggingHandler(os.Stderr, r))
@@ -157,4 +186,19 @@ func (s *DefaultServer) WriteJSON(w http.ResponseWriter, req *http.Request, obj 
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", scheme+s.Config.Host)
 	json.NewEncoder(w).Encode(obj)
+}
+
+// WriteText takes the given tmpl and daa, and returns appropriate text/plain to the user
+func (s *DefaultServer) WriteText(w http.ResponseWriter, req *http.Request, tmpl *template.Template, data interface{}, err error) {
+	w.Header().Set("Content-Type", "text/plain")
+
+	if err == nil {
+		err = tmpl.Execute(w, data)
+	}
+
+	if err != nil {
+		w.WriteHeader(500)
+		w.Write([]byte(err.Error()))
+		return
+	}
 }

@@ -12,6 +12,9 @@ skip_files:
 
 # List of handlers: https://gist.github.com/darktable/873098
 handlers:
+- url: /
+  script: _go_app
+
 - url: /json
   script: _go_app
 
@@ -69,14 +72,3 @@ handlers:
   mime_type: application/vnd.ms-fontobject
   static_files: static/\1
   upload: static/(.*\.eot)
-
-# Root
-- url: /
-  static_files: static/index.html
-  upload: static/index.html
-  http_headers:
-    Content-Security-Policy: >-
-      default-src 'self';
-      connect-src *;
-      script-src 'self' www.google-analytics.com;
-      img-src data: 'self' www.google-analytics.com maps.googleapis.com;
