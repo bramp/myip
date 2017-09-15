@@ -51,10 +51,12 @@ check-updates: install-tools
 	# TODO Write goapp get -u script
 
 deps: node_modules
-	for pkg in github.com/miekg/dns github.com/gorilla/handlers github.com/gorilla/mux   \
-		github.com/domainr/whois golang.org/x/net/context                                \
-		github.com/golang/protobuf/proto google.golang.org/appengine/socket              \
-		github.com/ua-parser/uap-go/uaparser github.com/kylelemons/godebug/pretty;       \
+	cd src/appengine; $(NODE_MODULES)/bower install
+
+	for pkg in github.com/miekg/dns github.com/domainr/whois                           \
+	    github.com/gorilla/handlers github.com/gorilla/mux github.com/gorilla/context  \
+		github.com/golang/protobuf/proto google.golang.org/appengine/socket            \
+		github.com/ua-parser/uap-go/uaparser github.com/kylelemons/godebug/pretty;     \
 	do \
 		if [ ! -d $(ROOT)/vendor/src/$$pkg ]; then \
 		    echo Getting $$pkg; \
