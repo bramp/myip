@@ -31,7 +31,7 @@ before_install:
 #  - ./go_appengine/goapp test ./tests; # If you are testing
 #  - ./go_appengine/goapp build ./packagedir; # Wherever you keep your stuff
 
-#after_success:
-#  - $HOME/gopath/bin/goveralls -service=travis-ci
+after_success:
+  - $HOME/gopath/bin/goveralls -service=travis-ci
 
 

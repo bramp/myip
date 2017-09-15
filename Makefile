@@ -2,7 +2,7 @@
 # http://www.compoundtheory.com/configuring-your-gopath-with-go-and-google-app-engine/
 #
 
-.PHONY: default install-tools check-update debug-env check imports fmt vet lint clean test deps serve deploy version
+.PHONY: default install-tools check-update debug-env check imports fmt vet lint clean veryclean test deps serve deploy version
 
 default: test
 
@@ -37,6 +37,7 @@ node_modules: package.json
 install-tools: node_modules
 	go get -u github.com/golang/lint/golint
 	go get -u golang.org/x/tools/cmd/goimports
+	go get -u github.com/mattn/goveralls
 
 	# We don't need the source for the tools
 	#rm -rf $(ROOT)/vendor/src/golang.org/lint/golint
@@ -63,7 +64,7 @@ deps: node_modules src/appengine/regexes.yaml
 		fi \
 	done
 
-check: deps fmt vet lint test
+check: deps fmt vet lint
 
 fmt:
 	goapp fmt appengine lib/...
@@ -80,6 +81,11 @@ test: check
 	# Test both standard go, and appengine go
 	# go test lib/...
 	goapp test lib/...
+
+coverage: check
+	#goapp test -covermode=count -coverprofile=profile.cov lib/...
+	#goveralls -coverprofile=profile.cov -service=travis-ci
+	cd src; goveralls -service=travis-ci -debug
 
 version: src/lib/myip/version.go
 
@@ -103,3 +109,4 @@ clean:
 
 veryclean: clean
 	rm -rf node_modules
+
