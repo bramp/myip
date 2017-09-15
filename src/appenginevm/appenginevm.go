@@ -52,29 +52,6 @@ func handleReverseDNS(ipAddr string) *dnsResponse {
 	return resp
 }
 
-
-func queryWhois(query, host string) (string, error) {
-	request := &whois.Request{
-		Query: query,
-		Host: host,
-	}
-	if err := request.Prepare(); err != nil {
-		return "", err
-	}
-
-	log.Printf("Whois requesting %s from %s", query, host)
-
-	response, err := whoisClient.Fetch(request)
-	if err != nil {
-		return "", err
-	}
-
-	log.Printf("Whois response: %s", response.String())
-
-	return response.String(), err
-}
-
-
 // queryIPWhois issues two whois queries, the first to find the right whois server, and the 2nd to
 // that server.
 func queryIPWhois(ipAddr string) (string, error) {

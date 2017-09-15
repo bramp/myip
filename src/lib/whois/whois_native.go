@@ -1,4 +1,4 @@
-// +build appengine
+// +build !appengine
 
 // Copyright 2017 Google Inc. All Rights Reserved.
 //
@@ -17,26 +17,11 @@
 package whois
 
 import (
-	"net"
-	"time"
-
 	domainr "github.com/domainr/whois"
 	"golang.org/x/net/context"
-	"google.golang.org/appengine/socket"
 )
 
+// QueryWhois issues a WHOIS query to the given host.
 func QueryWhois(ctx context.Context, query, host string) (string, error) {
-	// Create a client that uses the appengine sockets
-	client := &domainr.Client{
-		Dial: func(network, address string) (net.Conn, error) {
-			deadline := time.Now().Add(WhoisTimeout)
-			conn, err := socket.DialTimeout(ctx, network, address, WhoisTimeout)
-			if err != nil {
-				return nil, err
-			}
-			return conn, conn.SetDeadline(deadline)
-		},
-	}
-
-	return queryWhoisWithClient(ctx, client, query, host)
+	return queryWhoisWithClient(ctx, domainr.NewClient(WhoisTimeout), query, host)
 }

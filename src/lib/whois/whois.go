@@ -16,13 +16,23 @@ package whois
 
 import (
 	"bufio"
+	"fmt"
+	domainr "github.com/domainr/whois"
 	"golang.org/x/net/context"
+	"google.golang.org/appengine/log" // TODO REMOVE
 	"strings"
+	"time"
 )
 
 const (
 	// TODO Strip the ':' from the key
 	whoisKey = "whois:"
+
+	// ianaWhoisServer is the address of the Internet Assigned Numbers Authority whois server.
+	ianaWhoisServer = "whois.iana.org"
+
+	// WhoisTimeout is the dial/read timeout for the whois requests.
+	WhoisTimeout = 10 * time.Second
 )
 
 // Response contains the Whois data we send to the user.
@@ -132,4 +142,54 @@ func Handle(ctx context.Context, ipAddr string) *Response {
 	}
 
 	return resp
+}
+
+// QueryWhois issues a WHOIS query to the given host.
+// TODO Refactor to remove the appengine.log
+func queryWhoisWithClient(ctx context.Context, client *domainr.Client, query, host string) (string, error) {
+
+	if host == "whois.arin.net" {
+		// ARIN's whois servers will reply with "Query terms are ambiguous" if the query
+		// is not prefixed with a "n"
+		query = "n " + query
+	}
+
+	request := &domainr.Request{
+		Query: query,
+		Host:  host,
+	}
+	if err := request.Prepare(); err != nil {
+		return "", err
+	}
+
+	log.Infof(ctx, "Whois request %q from %q", query, host)
+
+	response, err := client.Fetch(request)
+	if err != nil {
+		log.Warningf(ctx, "Whois failed %q from %q: %s", query, host, err)
+		return "", err
+	}
+
+	log.Infof(ctx, "Whois response %q from %q:\n%s", query, host, response)
+	return response.String(), err
+}
+
+// QueryIPWhois issues two whois queries, the first to find the right whois server,
+// and the 2nd to that server.
+func QueryIPWhois(ctx context.Context, ipAddr string) (string, error) {
+	response, err := QueryWhois(ctx, ipAddr, ianaWhoisServer)
+
+	// IANA returns a key value response with a "whois: ..." line to indicate the whois
+	// server for the owner of this IP range.
+	m, err := parseWhois(response)
+	if err != nil {
+		return "", err
+	}
+
+	host, found := m[whoisKey]
+	if !found {
+		return response, fmt.Errorf("no whois server found for %q", ipAddr)
+	}
+
+	return QueryWhois(ctx, ipAddr, host)
 }
