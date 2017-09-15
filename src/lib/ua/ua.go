@@ -14,17 +14,11 @@
 
 package ua
 
-import "github.com/ua-parser/uap-go/uaparser"
+import (
+	"github.com/ua-parser/uap-go/uaparser"
+)
 
-var parser = mustNewUaParser()
-
-func mustNewUaParser() *uaparser.Parser {
-	p, err := uaparser.New("regexes.yaml")
-	if err != nil {
-		panic(err)
-	}
-	return p
-}
+var parser = uaparser.NewFromSaved()
 
 // DetermineUA parses this user agent, and returns a uaparser.Client.
 func DetermineUA(useragent string) *uaparser.Client {

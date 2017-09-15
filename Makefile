@@ -48,11 +48,7 @@ check-updates: install-tools
 	cd src/appengine; ncu -m bower
 	# TODO Write goapp get -u script
 
-# UA profile data
-src/appengine/regexes.yaml:
-	curl -o "$@" -z "$@" "https://raw.githubusercontent.com/ua-parser/uap-core/master/regexes.yaml"
-
-deps: node_modules src/appengine/regexes.yaml
+deps: node_modules
 	for pkg in github.com/miekg/dns github.com/gorilla/handlers github.com/gorilla/mux   \
 		github.com/domainr/whois golang.org/x/net/context                                \
 		github.com/golang/protobuf/proto google.golang.org/appengine/socket              \
