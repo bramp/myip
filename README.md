@@ -1,5 +1,5 @@
 # MyIP [![License](https://img.shields.io/github/license/bramp/myip.svg)](https://github.com/bramp/myip#licence-apache-2) [![Build Status](https://img.shields.io/travis/bramp/myip.svg)](https://travis-ci.org/bramp/myip) [![Report card](https://goreportcard.com/badge/github.com/bramp/myip)](https://goreportcard.com/report/github.com/bramp/myip)
-by Andrew Brampton ([bramp.net](https://bramp.net)) (c) 2017
+by Andrew Brampton ([bramp.net](https://bramp.net))
 
 <!--
 Add these when available:
