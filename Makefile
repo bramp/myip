@@ -22,7 +22,7 @@ export GOPATH
 PATH := $(ROOT)/vendor/bin:$(PATH)
 export PATH
 
-APP_YAML = src/appengine/app.yaml
+APP_YAML = appengine/app.yaml
 
 NODE_MODULES := $(ROOT)/node_modules/.bin
 
@@ -47,11 +47,11 @@ install-tools: node_modules
 
 check-updates: install-tools
 	$(NODE_MODULES)/ncu -m npm
-	cd src/appengine; $(NODE_MODULES)/ncu -m bower
+	cd appengine; $(NODE_MODULES)/ncu -m bower
 	# TODO Write goapp get -u script
 
 deps: node_modules
-	cd src/appengine; $(NODE_MODULES)/bower install
+	cd appengine; $(NODE_MODULES)/bower install
 
 	for pkg in github.com/miekg/dns github.com/domainr/whois                           \
 	    github.com/gorilla/handlers github.com/gorilla/mux github.com/gorilla/context  \
@@ -75,7 +75,7 @@ vet:
 	# go tool vet -v src
 
 lint:
-	golint -set_exit_status src/...
+	golint -set_exit_status ...
 
 test: check
 	# Testing standard go
@@ -87,14 +87,14 @@ test: check
 coverage: check
 	#goapp test -covermode=count -coverprofile=profile.cov lib/...
 	#goveralls -coverprofile=profile.cov -service=travis-ci
-	cd src; goveralls -service=travis-ci -debug
+	goveralls -service=travis-ci -debug
 
-version: src/lib/myip/version.go
+version: lib/myip/version.go
 
-src/lib/myip/version.go: $(shell find src -type f ! -name "version.go")
+lib/myip/version.go: $(shell find . -type f ! -name "version.go")
 	# -ldflags "-X main.BuildTime `date '+%Y-%m-%d %T %Z'` -X main.Version `git rev-parse HEAD`"
-	sed -i "" "s/\(Version[^\"]*\"\)[^\"]*/\1`git rev-parse HEAD`/" src/lib/myip/version.go
-	sed -i "" "s/\(BuildTime[^\"]*\"\)[^\"]*/\1`date '+%Y-%m-%d %T %Z'`/" src/lib/myip/version.go
+	sed -i "" "s/\(Version[^\"]*\"\)[^\"]*/\1`git rev-parse HEAD`/" lib/myip/version.go
+	sed -i "" "s/\(BuildTime[^\"]*\"\)[^\"]*/\1`date '+%Y-%m-%d %T %Z'`/" lib/myip/version.go
 
 serve:
 	goapp serve $(APP_YAML)
@@ -107,7 +107,7 @@ deploy: check
 
 clean:
 	rm -rf vendor/src
-	rm -rf src/appengine/static/bower_components
+	rm -rf appengine/static/bower_components
 
 veryclean: clean
 	rm -rf node_modules
