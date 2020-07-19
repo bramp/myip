@@ -16,12 +16,13 @@ package whois
 
 import (
 	"bufio"
+	"context"
 	"fmt"
-	domainr "github.com/domainr/whois"
-	"golang.org/x/net/context"
-	"google.golang.org/appengine/log" // TODO REMOVE
 	"strings"
 	"time"
+
+	domainr "github.com/domainr/whois"
+	log "github.com/sirupsen/logrus"
 )
 
 const (
@@ -145,7 +146,6 @@ func Handle(ctx context.Context, ipAddr string) *Response {
 }
 
 // QueryWhois issues a WHOIS query to the given host.
-// TODO Refactor to remove the appengine.log
 func queryWhoisWithClient(ctx context.Context, client *domainr.Client, query, host string) (string, error) {
 
 	if host == "whois.arin.net" {
@@ -162,16 +162,22 @@ func queryWhoisWithClient(ctx context.Context, client *domainr.Client, query, ho
 		return "", err
 	}
 
-	log.Infof(ctx, "Whois request %q from %q", query, host)
+	log.Infof("Whois request %q from %q", query, host)
 
 	response, err := client.Fetch(request)
 	if err != nil {
-		log.Warningf(ctx, "Whois failed %q from %q: %s", query, host, err)
+		log.Warningf("Whois failed %q from %q: %s", query, host, err)
 		return "", err
 	}
 
-	log.Infof(ctx, "Whois response %q from %q:\n%s", query, host, response)
+	log.Infof("Whois response %q from %q:\n%s", query, host, response)
 	return response.String(), err
+}
+
+// QueryWhois issues a WHOIS query to the given host.
+func QueryWhois(ctx context.Context, query, host string) (string, error) {
+	client := domainr.NewClient(WhoisTimeout)
+	return queryWhoisWithClient(ctx, client, query, host)
 }
 
 // QueryIPWhois issues two whois queries, the first to find the right whois server,

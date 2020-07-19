@@ -16,10 +16,11 @@ package location
 
 import (
 	"errors"
-	"lib/conf"
 	"net/http"
 	"strconv"
 	"strings"
+
+	"bramp.net/myip/lib/conf"
 )
 
 // Response contains the location data we send to the user.

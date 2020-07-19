@@ -18,21 +18,20 @@ package myip
 
 import (
 	"encoding/json"
-	"fmt"
 	"net"
 	"net/http"
 	"os"
+	"strings"
+	"text/template"
 
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
-
 	"github.com/ua-parser/uap-go/uaparser"
-	"lib/conf"
-	"lib/dns"
-	"lib/location"
-	"lib/whois"
-	"strings"
-	"text/template"
+
+	"bramp.net/myip/lib/conf"
+	"bramp.net/myip/lib/dns"
+	"bramp.net/myip/lib/location"
+	"bramp.net/myip/lib/whois"
 )
 
 // Server is the interface all instances of the myip application should implement.
@@ -105,16 +104,18 @@ var cliTmpl = template.Must(template.New("test").Parse(
 func Register(app Server) {
 	r := mux.NewRouter()
 
-	rootHandler := func(w http.ResponseWriter, req *http.Request) {
-		// TODO Find CSP generator to make the next line shorter, and less error prone
-		w.Header().Add("Content-Security-Policy", "default-src 'self';"+
-			" connect-src *;"+
-			" script-src 'self' www.google-analytics.com;"+
-			" img-src data: 'self' www.google-analytics.com maps.googleapis.com;")
+	/*
+		// TODO Readd CSP (maybe https://github.com/unrolled/secure)
+		rootHandler := func(w http.ResponseWriter, req *http.Request) {
+			// TODO Find CSP generator to make the next line shorter, and less error prone
+			w.Header().Add("Content-Security-Policy", "default-src 'self';"+
+				" connect-src *;"+
+				" script-src 'self' www.google-analytics.com;"+
+				" img-src data: 'self' www.google-analytics.com maps.googleapis.com;")
 
-		http.ServeFile(w, req, "static/index.html")
-	}
-
+			http.ServeFile(w, req, "static/index.html")
+		}
+	*/
 	cliHandler := func(w http.ResponseWriter, req *http.Request) {
 		response, err := app.HandleMyIP(req)
 		app.WriteText(w, req, cliTmpl, response, err)
@@ -130,15 +131,15 @@ func Register(app Server) {
 
 	r.MatcherFunc(isCli).HandlerFunc(cliHandler)
 
-	r.HandleFunc("/", rootHandler)
 	r.HandleFunc("/json", jsonHandler)
 	r.HandleFunc("/config.js", app.HandleConfigJs)
 
-	// App Engine and Compute Engine health checks.
-	// TODO only set if compiled for app engine
-	r.Path("/_ah/health").HandlerFunc(healthCheckHandler)
+	// Serve the static content
+	fs := http.FileServer(http.Dir("./static/"))
+	r.PathPrefix("/").Handler(fs)
 
 	// Log all requests using the standard Apache format.
+	// TODO Do something specific for AppEngine
 	http.Handle("/", handlers.CombinedLoggingHandler(os.Stderr, r))
 }
 
@@ -169,10 +170,6 @@ func (s *DefaultServer) GetRemoteAddr(req *http.Request) (string, error) {
 	return host, err
 }
 
-func healthCheckHandler(w http.ResponseWriter, _ *http.Request) {
-	fmt.Fprint(w, "ok")
-}
-
 // WriteJSON takes the given obj and error, and returns appropriate JSON to the user
 func (s *DefaultServer) WriteJSON(w http.ResponseWriter, req *http.Request, obj interface{}, err error) {
 	if err != nil {
@@ -190,7 +187,7 @@ func (s *DefaultServer) WriteJSON(w http.ResponseWriter, req *http.Request, obj 
 	json.NewEncoder(w).Encode(obj)
 }
 
-// WriteText takes the given tmpl and daa, and returns appropriate text/plain to the user
+// WriteText takes the given tmpl and data, and returns appropriate text/plain to the user
 func (s *DefaultServer) WriteText(w http.ResponseWriter, req *http.Request, tmpl *template.Template, data interface{}, err error) {
 	w.Header().Set("Content-Type", "text/plain")
 

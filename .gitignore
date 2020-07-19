@@ -1,2 +1,3 @@
-vendor
 node_modules
+static/bower_components
+.cache

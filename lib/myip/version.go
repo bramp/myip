@@ -5,8 +5,8 @@ package myip
 
 var (
 	// Version is the applications build version
-	Version = "4ea4b28cb7fb44edacdf0185e15d4c8ad8fc51ce"
+	Version = "a88431859b85909f2049db5fb94bd0cc5bd02af1"
 
 	// BuildTime is when this application was built
-	BuildTime = "2017-02-16 20:36:20 PST"
+	BuildTime = "2020-07-18 23:31:13 PDT"
 )

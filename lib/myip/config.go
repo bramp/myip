@@ -16,10 +16,10 @@ package myip
 
 import (
 	"bytes"
-	"lib/conf"
 	"net/http"
-
 	"text/template"
+
+	"bramp.net/myip/lib/conf"
 )
 
 var configTemplate = `

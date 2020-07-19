@@ -17,25 +17,23 @@
 package dns
 
 import (
+	"context"
 	"fmt"
 	"math/rand"
 	"net"
 	"time"
 
 	mdns "github.com/miekg/dns"
-	"golang.org/x/net/context"
-	"google.golang.org/appengine/log"
-	"google.golang.org/appengine/socket"
+	log "github.com/sirupsen/logrus"
 )
 
 // TODO Change this to be newAppEngineClient (that looks like the dnsClient)
 func appEngineExchange(ctx context.Context, m *mdns.Msg) (*mdns.Msg, error) {
-
 	// Pick a server at random
 	server := dnsServers[rand.Intn(len(dnsServers))]
 	server = net.JoinHostPort(server, "53")
 
-	c, err := socket.DialTimeout(ctx, "udp", server, dnsTimeout)
+	c, err := net.DialTimeout(ctx, "udp", server, dnsTimeout)
 	if err != nil {
 		return nil, err
 	}
@@ -82,16 +80,16 @@ func LookupAddr(ctx context.Context, ipAddr string) ([]string, error) {
 	m.Question = make([]mdns.Question, 1)
 	m.Question[0] = mdns.Question{name, mdns.TypePTR, mdns.ClassINET}
 
-	log.Infof(ctx, "DNS request for %q: %s", ipAddr, m)
+	log.Infof("DNS request for %q: %s", ipAddr, m)
 
 	// TODO Add some kind of retry logic (for lost UDP packets)
 	in, err := appEngineExchange(ctx, m)
 	if err != nil {
-		log.Warningf(ctx, "DNS failed for %q: %s", ipAddr, err)
+		log.Warningf("DNS failed for %q: %s", ipAddr, err)
 		return nil, err
 	}
 
-	log.Infof(ctx, "DNS response for %q: %s", ipAddr, in)
+	log.Infof("DNS response for %q: %s", ipAddr, in)
 
 	result := []string{}
 	for _, record := range in.Answer {

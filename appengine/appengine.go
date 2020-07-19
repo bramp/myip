@@ -1,5 +1,3 @@
-// +build appengine
-
 // Copyright 2017 Google Inc. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,24 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package appengine provides a Google App Engine (Standard) specific implementation of myip
-package appengine
+// appengine provides a Google App Engine (Standard) specific implementation of myip
+package main // import "bramp.net/myip/appengine"
 
 import (
 	"fmt"
 	"net/http"
-
-	"google.golang.org/appengine"
-
-	"lib/dns"
-	"lib/ua"
-	"lib/whois"
-
-	"github.com/ua-parser/uap-go/uaparser"
-	"lib/conf"
-	"lib/location"
-	"lib/myip"
+	"os"
 	"sync"
+
+	"bramp.net/myip/lib/conf"
+	"bramp.net/myip/lib/dns"
+	"bramp.net/myip/lib/location"
+	"bramp.net/myip/lib/myip"
+	"bramp.net/myip/lib/ua"
+	"bramp.net/myip/lib/whois"
+
+	log "github.com/sirupsen/logrus"
+	"github.com/ua-parser/uap-go/uaparser"
+	"google.golang.org/appengine"
 )
 
 func ternary(b bool, t, f string) string {
@@ -52,6 +51,8 @@ var debugConfig = &conf.Config{
 }
 
 var prodConfig = &conf.Config{
+	Debug: false,
+
 	Host:  "ip.bramp.net",
 	Host4: "ip4.bramp.net",
 	Host6: "ip6.bramp.net",
@@ -64,10 +65,11 @@ var prodConfig = &conf.Config{
 }
 
 var appengineDefaultConfig = &conf.Config{
-	Debug: appengine.IsDevAppServer(),
+	Debug: true,
 
-	IPHeader:        "",
-	RequestIDHeader: ternary(appengine.IsDevAppServer(), "X-Appengine-Request-Log-Id", "X-Cloud-Trace-Context"),
+	IPHeader: "X-Appengine-User-Ip",
+
+	RequestIDHeader: "X-Cloud-Trace-Context",
 	LatLongHeader:   "X-Appengine-Citylatlong",
 	CityHeader:      "X-Appengine-City",
 
@@ -102,21 +104,40 @@ type server struct {
 	myip.DefaultServer
 }
 
-func init() {
-	config := prodConfig
-	if appengine.IsDevAppServer() {
-		config = debugConfig
+func main() {
+	config := debugConfig
+	log.SetLevel(log.DebugLevel)
+
+	if appengine.IsAppEngine() {
+		config = prodConfig
+		log.SetLevel(log.WarnLevel)
 	}
 
 	config, err := conf.ApplyDefaults(config, appengineDefaultConfig)
 	if err != nil {
-		// No choice but to panic here
-		panic(err.Error())
+		log.Fatalf("Failed to ApplyDefaults: %s", err)
 	}
 
 	myip.Register(&server{
-		myip.DefaultServer{config},
+		myip.DefaultServer{
+			Config: config,
+		},
 	})
+
+	http.HandleFunc("/_ah/warmup", func(w http.ResponseWriter, r *http.Request) {
+		log.Println("warmup done")
+	})
+
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+		log.Printf("Defaulting to port %s", port)
+	}
+
+	log.Printf("Listening on port %s", port)
+	if err := http.ListenAndServe(":"+port, nil); err != nil {
+		log.Fatalf("Failing ListenAndServe(%s): %s:", port, err)
+	}
 }
 
 // addToWg executes the function in a new gorountine and adds it to the WaitGroup, calling wg.Done
@@ -129,10 +150,8 @@ func addToWg(wg *sync.WaitGroup, f func()) {
 	}()
 }
 
-// TODO Make this not app engine specific by factoring out the HandleCode.
 func (app *server) HandleMyIP(req *http.Request) (*myip.Response, error) {
-
-	ctx := appengine.NewContext(req)
+	ctx := req.Context()
 	wg := &sync.WaitGroup{}
 
 	host, err := app.GetRemoteAddr(req)
@@ -142,6 +161,7 @@ func (app *server) HandleMyIP(req *http.Request) (*myip.Response, error) {
 
 	family := "IPv4"
 	if f := req.URL.Query().Get("family"); f != "" {
+		// TODO Change this to actually lookup the family of `host`
 		family = f
 	}
 

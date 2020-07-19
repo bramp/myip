@@ -1,0 +1,20 @@
+# Files in here do not get uploaded to AppEngine
+# To see what does, run:
+#   gcloud app deploy --project myip-158305 --appyaml appengine/app.yaml --no-promote --verbosity=debug
+
+node_modules
+
+# Ignore the git directory!
+.git
+.gitignore
+.cache
+.idea
+
+# Ignore some files that end up in a dist/ directory
+static/bower_components/bootstrap/fonts
+static/bower_components/bootstrap/grunt
+static/bower_components/bootstrap/js
+static/bower_components/bootstrap/less
+static/bower_components/bootstrap/nuget
+static/bower_components/components-font-awesome/less
+static/bower_components/components-font-awesome/scss

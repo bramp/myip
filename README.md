@@ -21,12 +21,19 @@ This project was quite literally hacked out in one weekend, and was my first App
 
 ### Prerequisites
 
-* [App Engine SDK for Go](https://cloud.google.com/appengine/docs/go/download)
+* [Google Cloud SDK](https://cloud.google.com/sdk/docs)
+* AppEngine Go SDK
+
+    ```shell
+    $ gcloud components install app-engine-go
+    ```
+
 * [Make](https://www.gnu.org/software/make/) (which comes on Linux or Mac)
 * [npm](https://www.npmjs.com/)
 
 Then run
-```bash
+
+```shell
 make install-tools
 ```
 
@@ -52,8 +59,10 @@ ip6.bramp.net.		300	IN	AAAA	2001:4860:4802:32::15
 All three domain names should be configured in main.go (find the prodConfig var).
 
 To deploy:
-```bash
-make deploy
+
+```shell
+make deploy # to prod
+make stage  # to stage
 ```
 
 ## Development
@@ -63,19 +72,22 @@ To run locally we use the addresses, [localhost:8080](http://localhost:8080),
 The first can be either, and the latter are IPv4 and IPv6 respectively.
 
 To start up a local instance, just execute:
-```bash
+
+```shell
 make serve
 ```
 
 To test:
-```bash
+
+```shell
 make test
 ```
 
 ### Libraries
 
 To keep libraries up to date run:
-```bash
+
+```shell
 make veryclean
 make test
 ```
@@ -91,6 +103,7 @@ make test
 - [ ] Implement a App Engine Flex, and other PaaS environments
 - [ ] Minify all css and js and combine into one file
 - [ ] Do better at determining the root cause errors. e.g If both IPv4/IPv6 fail, then perhaps problem with the site. If IPv6 fails after 30 seconds, perhaps problem with IPv6 connectivity.
+- [ ] Refactor the app. We don't need to seperate appengine and not appengine anymore. The code is almost identical.
 
 ## Licence (Apache 2)
 
@@ -98,7 +111,7 @@ make test
 just code that happens to be owned by Google.*
 
 ```
-Copyright 2017 Google Inc. All Rights Reserved.
+Copyright 2017,2020 Google Inc. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.

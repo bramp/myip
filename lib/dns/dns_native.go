@@ -17,9 +17,8 @@
 package dns
 
 import (
+	"context"
 	"net"
-
-	"golang.org/x/net/context"
 )
 
 // LookupAddr performs a reverse lookup for the given address, returning a list
