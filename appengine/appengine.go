@@ -63,6 +63,7 @@ var appengineDefaultConfig = &conf.Config{
 	IPHeader: "X-Appengine-User-Ip",
 
 	RequestIDHeader: "X-Cloud-Trace-Context",
+	ProtoHeader:     "X-Forwarded-Proto",
 	LatLongHeader:   "X-Appengine-Citylatlong",
 	CityHeader:      "X-Appengine-City",
 

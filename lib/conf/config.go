@@ -26,11 +26,19 @@ type Config struct {
 	// Debug enables unsafe options for debugging
 	Debug bool `json:",omitempty"`
 
+	// TODO Consider adding support for "Forwarded" headrr
+	// https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Forwarded
+
 	// IPHeader is the header to trust to contain the user's IP address
 	// Examples:
 	//   "Cf-Connecting-Ip" for CloudFlare
 	//   "X-Forwarded-For" for generic proxies
 	IPHeader string `json:",omitempty"`
+
+	// ProtoHeader is the header to trust to contain the user's HTTP protocal (HTTP or HTTPS).
+	// Examples:
+	//   "X-Forwarded-Proto"
+	ProtoHeader string `json:",omitempty"`
 
 	// LatLongHeader is the header with the LatLong information
 	// Examples:

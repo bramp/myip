@@ -105,12 +105,11 @@ var cliTmpl = template.Must(template.New("test").Parse(
 func Register(app Server, config *conf.Config) { // TODO Refactor so we don't need config here
 
 	// Documented here: https://godoc.org/github.com/unrolled/secure#Options
-	secureMiddleware := secure.New(secure.Options{
+	secureConfig := secure.Options{
 		IsDevelopment: config.Debug,
 
-		SSLRedirect:     true,
-		SSLHost:         "", // Use same host
-		SSLProxyHeaders: map[string]string{"X-Forwarded-Proto": "https"},
+		SSLRedirect: true,
+		SSLHost:     "", // Use same host
 
 		// Ensure the client is using HTTPS
 		STSSeconds:           365 * 24 * 60 * 60,
@@ -126,10 +125,18 @@ func Register(app Server, config *conf.Config) { // TODO Refactor so we don't ne
 			" connect-src *;" +
 			" script-src 'self' www.google-analytics.com;" +
 			" img-src data: 'self' www.google-analytics.com maps.googleapis.com;",
-	})
+	}
+	if config.ProtoHeader != "" {
+		// Set this if behind a proxy server
+		secureConfig.SSLProxyHeaders = map[string]string{config.ProtoHeader: "https"}
+	}
 
 	r := mux.NewRouter()
-	r.Use(secureMiddleware.Handler)
+	r.Use(secure.New(secureConfig).Handler)
+
+	// TODO Consider using the http://www.gorillatoolkit.org/pkg/handlers#ProxyHeaders middleware.
+	// This will move the x-forwarded headers into the Request object
+	// r.Use(handlers.ProxyHeaders)
 
 	cliHandler := func(w http.ResponseWriter, req *http.Request) {
 		response, err := app.HandleMyIP(req)
@@ -185,6 +192,15 @@ func (s *DefaultServer) GetRemoteAddr(req *http.Request) (string, error) {
 	return host, err
 }
 
+// isSsl returns true if the client is using SSL.
+func (s *DefaultServer) isSsl(req *http.Request) bool {
+	if s.Config.ProtoHeader != "" {
+		// If the ProtoHeader is set, trust that value, not what's in the request.
+		return req.Header.Get(s.Config.ProtoHeader) == "https"
+	}
+	return (req.URL.Scheme == "https") || (req.TLS != nil)
+}
+
 // WriteJSON takes the given obj and error, and returns appropriate JSON to the user
 func (s *DefaultServer) WriteJSON(w http.ResponseWriter, req *http.Request, obj interface{}, err error) {
 	if err != nil {
@@ -193,8 +209,7 @@ func (s *DefaultServer) WriteJSON(w http.ResponseWriter, req *http.Request, obj 
 	}
 
 	scheme := "http://"
-	if req.TLS != nil {
-		// TODO If proxied the client may be SSL but the proxy->us may not be.
+	if s.isSsl(req) {
 		scheme = "https://"
 	}
 
