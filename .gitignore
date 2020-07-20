@@ -1,4 +1,7 @@
 node_modules
 static/bower_components
 .cache
+
+# This checked in file, was marked as no longer changed with:
+# `git update-index --assume-unchanged appengine/version.go`
 appengine/version.go
