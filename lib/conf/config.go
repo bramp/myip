@@ -19,6 +19,12 @@ import "encoding/json"
 // Config contains all the configuration options for this application.
 // TODO Turn this into a config file that gets parsed onstartup
 type Config struct {
+	// The build version
+	Version string
+
+	// The build time
+	BuildTime string
+
 	Host  string `json:",omitempty"`
 	Host4 string `json:",omitempty"`
 	Host6 string `json:",omitempty"`

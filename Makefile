@@ -55,13 +55,13 @@ coverage: check
 	#goveralls -coverprofile=profile.cov -service=travis-ci
 	goveralls -service=travis-ci -debug
 
-version: lib/myip/version.go
+version: appengine/version.go
 
 # TODO Move version into the app-engine directory
-lib/myip/version.go: $(shell find . -type f ! -name "version.go")
+appengine/version.go: $(shell git ls-tree -r HEAD --name-only | grep -v /version.go$)
 	# -ldflags "-X main.BuildTime `date '+%Y-%m-%d %T %Z'` -X main.Version `git rev-parse HEAD`"
-	sed -i "" "s/\(Version[^\"]*\"\)[^\"]*/\1`git rev-parse HEAD`/" lib/myip/version.go
-	sed -i "" "s/\(BuildTime[^\"]*\"\)[^\"]*/\1`date '+%Y-%m-%d %T %Z'`/" lib/myip/version.go
+	sed -i "" "s/\(Version[^\"]*\"\)[^\"]*/\1`git rev-parse HEAD`/" appengine/version.go
+	sed -i "" "s/\(BuildTime[^\"]*\"\)[^\"]*/\1`date '+%Y-%m-%d %T %Z'`/" appengine/version.go
 
 serve:
 	go run bramp.net/myip/appengine
