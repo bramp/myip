@@ -5,8 +5,8 @@ package main
 
 var (
 	// Version is the applications build version
-	Version = "unknown"
+	Version = "unknown version"
 
 	// BuildTime is when this application was built
-	BuildTime = "unknown"
+	BuildTime = "unknown build time"
 )
