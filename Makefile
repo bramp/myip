@@ -59,7 +59,7 @@ coverage: check
 version: appengine/version.go
 
 # TODO Move version into the app-engine directory
-appengine/version.go: $(shell git ls-tree -r HEAD --name-only | grep -v /version.go$)
+appengine/version.go: $(shell git ls-tree -r HEAD --name-only | grep -v /version.go$) .git/index
 	# -ldflags "-X main.BuildTime `date '+%Y-%m-%d %T %Z'` -X main.Version `git describe --long --tags --dirty --always`"
 	sed -i "" "s/\(Version[^\"]*\"\)[^\"]*/\1`git describe --long --tags --dirty --always`/" appengine/version.go
 	sed -i "" "s/\(BuildTime[^\"]*\"\)[^\"]*/\1`date '+%Y-%m-%d %T %Z'`/" appengine/version.go
