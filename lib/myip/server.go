@@ -63,8 +63,9 @@ func Register(r *mux.Router, config *conf.Config) { // TODO Refactor so we don't
 	secureConfig := secure.Options{
 		IsDevelopment: config.Debug,
 
-		SSLRedirect: true,
-		SSLHost:     "", // Use same host
+		// TODO Fix this (it causes constant 301s) every since I implemented URLHeaders
+		// SSLRedirect: true,
+		// SSLHost:     "", // Use same host
 
 		// Ensure the client is using HTTPS
 		STSSeconds:           365 * 24 * 60 * 60,
