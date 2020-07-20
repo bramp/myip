@@ -6,9 +6,6 @@
   "license": "Apache-2.0",
   "devDependencies": {
     "bower": "^1.8.8",
-    "npm-check-updates": "2.10.2"
-  },
-  "scripts": {
-    "postinstall": "cd src/appengine; bower install"
+    "npm-check-updates": "7.0.2"
   }
 }

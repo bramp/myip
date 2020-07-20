@@ -18,9 +18,11 @@ debug-env:
 	printenv | grep 'GO'
 
 # Only update node_modules if the package.json has changed.
-node_modules: package.json
+package-lock.json: package.json
 	npm install
 	touch $@
+
+node_modules: package-lock.json
 
 # We don't add this target as a dependency, because the `go get` are quite expensive to run.
 install-tools: node_modules
@@ -30,8 +32,7 @@ install-tools: node_modules
 	go get -u github.com/mattn/goveralls
 
 check-updates: install-tools
-	$(NODE_MODULES)/ncu -m npm
-	$(NODE_MODULES)/ncu -m bower
+	$(NODE_MODULES)/ncu
 
 deps: node_modules
 	$(NODE_MODULES)/bower install
