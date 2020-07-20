@@ -18,8 +18,6 @@ import (
 	"bytes"
 	"net/http"
 	"text/template"
-
-	"bramp.net/myip/lib/conf"
 )
 
 var configTemplate = `
@@ -35,14 +33,8 @@ var SERVERS = {
 
 var MAPS_API_KEY = "{{.MapsAPIKey}}";`
 
-type configAndVersion struct {
-	*conf.Config
-	Version   string
-	BuildTime string
-}
-
-// HandleConfigJs returns the config javascript.
-func (s *DefaultServer) HandleConfigJs(w http.ResponseWriter, _ *http.Request) {
+// ConfigJSHandler returns the config javascript.
+func (s *DefaultServer) ConfigJSHandler(w http.ResponseWriter, _ *http.Request) {
 	tmpl, err := template.New("config").Parse(configTemplate)
 
 	if err != nil {
@@ -51,17 +43,9 @@ func (s *DefaultServer) HandleConfigJs(w http.ResponseWriter, _ *http.Request) {
 		return
 	}
 
-	data := struct {
-		*conf.Config
-		Version   string
-		BuildTime string
-	}{
-		s.Config, Version, BuildTime,
-	}
-
 	// Buffer the output so we can put a error at the front if it fails
 	var buf bytes.Buffer
-	err = tmpl.Execute(&buf, data)
+	err = tmpl.Execute(&buf, s.Config)
 	if err != nil {
 		// TODO Consider writing out a nice error js field, instead of invalid js.
 		w.WriteHeader(500)

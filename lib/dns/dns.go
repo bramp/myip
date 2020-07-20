@@ -16,11 +16,20 @@ package dns
 
 import (
 	"context"
+	"net"
 	"time"
 )
 
 const (
 	dnsTimeout = 4 * time.Second
+)
+
+var (
+	dns = &net.Resolver{
+		PreferGo: true,
+
+		// TODO In future perhaps override `Dial` so we can force the DNS server that is used.
+	}
 )
 
 // Response contains the DNS data we send to the user.
@@ -32,12 +41,10 @@ type Response struct {
 	Error string   `json:",omitempty"`
 }
 
-// Google IPv4 and IPv6 DNS servers // TODO Make configurable
-var dnsServers = []string{"8.8.8.8", "8.8.4.4", "2001:4860:4860::8888", "2001:4860:4860::8844"}
-
 // HandleReverseDNS generates a dns.Response for the given IP address.
 func HandleReverseDNS(ctx context.Context, ipAddr string) *Response {
 	names, err := LookupAddr(ctx, ipAddr)
+
 	resp := &Response{
 		Query: ipAddr,
 		Names: names,
@@ -47,4 +54,19 @@ func HandleReverseDNS(ctx context.Context, ipAddr string) *Response {
 	}
 
 	return resp
+}
+
+// LookupAddr performs a reverse lookup for the given address, returning a list
+// of names mapping to that address.
+func LookupAddr(ctx context.Context, ipAddr string) ([]string, error) {
+	// Special case localhost
+	if ip := net.ParseIP(ipAddr); ip.IsLoopback() {
+		if ip.To4() != nil {
+			return []string{"localhost"}, nil
+		}
+		return []string{"ip6-localhost"}, nil
+	}
+
+	// Issue a real DNS query
+	return dns.LookupAddr(ctx, ipAddr)
 }

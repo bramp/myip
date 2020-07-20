@@ -17,14 +17,11 @@
 package myip
 
 import (
-	"encoding/json"
+	"fmt"
 	"net"
 	"net/http"
-	"os"
-	"strings"
-	"text/template"
+	"sync"
 
-	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/ua-parser/uap-go/uaparser"
 	"github.com/unrolled/secure"
@@ -32,6 +29,7 @@ import (
 	"bramp.net/myip/lib/conf"
 	"bramp.net/myip/lib/dns"
 	"bramp.net/myip/lib/location"
+	"bramp.net/myip/lib/ua"
 	"bramp.net/myip/lib/whois"
 )
 
@@ -39,23 +37,22 @@ import (
 type Server interface {
 	GetRemoteAddr(req *http.Request) (string, error)
 
-	HandleMyIP(req *http.Request) (*Response, error)
-	HandleConfigJs(w http.ResponseWriter, _ *http.Request)
+	MyIPHandler(req *http.Request) (*Response, error)
 
-	// TODO This WriteJSON method doesn't seem appropriate for the Server interface, however, it is
-	// only here all the Server config to be used correctly. Consider Refactoring.
-	WriteJSON(w http.ResponseWriter, req *http.Request, obj interface{}, err error)
-	WriteText(w http.ResponseWriter, req *http.Request, tmpl *template.Template, data interface{}, err error)
+	// TODO Merge CLI and JSON together, and use a different marshallers.
+	// CLI index page
+	CLIHandler(w http.ResponseWriter, req *http.Request)
+
+	// JSON index page
+	JSONHandler(w http.ResponseWriter, req *http.Request)
+
+	// Web-app config
+	ConfigJSHandler(w http.ResponseWriter, _ *http.Request)
 }
 
 // DefaultServer is a default implementation of Server with some good defaults.
 type DefaultServer struct {
 	Config *conf.Config
-}
-
-// ErrResponse is returned in the case of a error.
-type ErrResponse struct {
-	Error string
 }
 
 // Response is a normal response.
@@ -81,28 +78,11 @@ type Response struct {
 	Insights map[string]string `json:",omitempty"`
 }
 
-type objHandler func(req *http.Request) (interface{}, error)
-
-// isCli returns true if the request is coming from a cli tool, such as curl, or wget
-func isCli(req *http.Request, _ *mux.RouteMatch) bool {
-	ua := req.Header.Get("User-Agent")
-	return strings.HasPrefix(ua, "curl/") || strings.HasPrefix(ua, "Wget/")
-}
-
-var cliTmpl = template.Must(template.New("test").Parse(
-	"IP: {{.RemoteAddr}}\n" +
-		"{{range .RemoteAddrReverse.Names}}" +
-		"DNS: {{.}}\n" +
-		"{{end}}\n" +
-		"WHOIS:\n" +
-		"{{.RemoteAddrWhois.Body}}\n\n" +
-		"Location: " +
-		"{{.Location.City}} {{.Location.Region}} {{.Location.Country}}" +
-		"{{if (and (ne .Location.Lat 0.0) (ne .Location.Long 0.0))}} ({{.Location.Lat}}, {{.Location.Long}}) {{end}}\n\n" +
-		"ID: {{.RequestID}}\n"))
-
 // Register this myip.Server. Should only be called once.
-func Register(app Server, config *conf.Config) { // TODO Refactor so we don't need config here
+func Register(r *mux.Router, config *conf.Config) { // TODO Refactor so we don't need config here
+	app := &DefaultServer{
+		Config: config,
+	}
 
 	// Documented here: https://godoc.org/github.com/unrolled/secure#Options
 	secureConfig := secure.Options{
@@ -126,111 +106,121 @@ func Register(app Server, config *conf.Config) { // TODO Refactor so we don't ne
 			" script-src 'self' www.google-analytics.com;" +
 			" img-src data: 'self' www.google-analytics.com maps.googleapis.com;",
 	}
-	if config.ProtoHeader != "" {
-		// Set this if behind a proxy server
-		secureConfig.SSLProxyHeaders = map[string]string{config.ProtoHeader: "https"}
-	}
 
-	r := mux.NewRouter()
 	r.Use(secure.New(secureConfig).Handler)
 
-	// TODO Consider using the http://www.gorillatoolkit.org/pkg/handlers#ProxyHeaders middleware.
-	// This will move the x-forwarded headers into the Request object
-	// r.Use(handlers.ProxyHeaders)
+	// Fetching with `curl`
+	r.MatcherFunc(isCLI).HandlerFunc(app.CLIHandler)
 
-	cliHandler := func(w http.ResponseWriter, req *http.Request) {
-		response, err := app.HandleMyIP(req)
-		app.WriteText(w, req, cliTmpl, response, err)
-	}
-
-	jsonHandler := func(w http.ResponseWriter, req *http.Request) {
-		response, err := app.HandleMyIP(req)
-		if err != nil {
-			response = addInsights(req, response)
-		}
-		app.WriteJSON(w, req, response, err)
-	}
-
-	r.MatcherFunc(isCli).HandlerFunc(cliHandler)
-
-	r.HandleFunc("/json", jsonHandler)
-	r.HandleFunc("/config.js", app.HandleConfigJs)
+	r.HandleFunc("/json", app.JSONHandler)
+	r.HandleFunc("/config.js", app.ConfigJSHandler)
 
 	// Serve the static content
 	fs := http.FileServer(http.Dir("./static/"))
 	r.PathPrefix("/").Handler(fs)
-
-	// Log all requests using the standard Apache format.
-	// TODO Do something specific for AppEngine
-	http.Handle("/", handlers.CombinedLoggingHandler(os.Stderr, r))
 }
 
-// GetRemoteAddr returns the remote address, either the real one, or one passed via a header, or
-// finally if in debug one passed as a query param.
+// GetRemoteAddr returns the remote address, either the real one, or if in debug mode one passed as a query param.
 func (s *DefaultServer) GetRemoteAddr(req *http.Request) (string, error) {
-	remoteAddr := req.RemoteAddr
-
 	// If debug allow replacing the host
 	if host := req.URL.Query().Get("host"); host != "" && s.Config.Debug {
 		return host, nil
 	}
 
-	if s.Config.IPHeader != "" {
-		if addr := req.Header.Get(s.Config.IPHeader); addr != "" {
-			remoteAddr = addr
-		}
-	}
-
-	// Some systems (namely App Engine Flex encode the remoteAddr with a port)
-	host, _, err := net.SplitHostPort(remoteAddr)
+	// Some systems (namely App Engine Flex) encode the remoteAddr with a port
+	host, _, err := net.SplitHostPort(req.RemoteAddr)
 	if err != nil {
-		// for now assume the RemoteAddr was just a addr (with no port)
+		// For now assume the RemoteAddr was just a addr (with no port)
 		// TODO check if remoteAddr is a valid IPv6/IPv4 address
-		return remoteAddr, nil
+		return req.RemoteAddr, nil
 	}
 
 	return host, err
 }
 
-// isSsl returns true if the client is using SSL.
-func (s *DefaultServer) isSsl(req *http.Request) bool {
-	if s.Config.ProtoHeader != "" {
-		// If the ProtoHeader is set, trust that value, not what's in the request.
-		return req.Header.Get(s.Config.ProtoHeader) == "https"
-	}
-	return (req.URL.Scheme == "https") || (req.TLS != nil)
+// addToWg executes the function in a new gorountine and adds it to the WaitGroup, calling wg.Done
+// when finished. This makes it a little eaiser to use the WaitGroup.
+func addToWg(wg *sync.WaitGroup, f func()) {
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		f()
+	}()
 }
 
-// WriteJSON takes the given obj and error, and returns appropriate JSON to the user
-func (s *DefaultServer) WriteJSON(w http.ResponseWriter, req *http.Request, obj interface{}, err error) {
+// MyIPHandler is the main code to handle a IP lookup.
+func (s *DefaultServer) MyIPHandler(req *http.Request) (*Response, error) {
+	ctx := req.Context()
+	wg := &sync.WaitGroup{}
+
+	host, err := s.GetRemoteAddr(req)
 	if err != nil {
-		w.WriteHeader(500)
-		obj = &ErrResponse{err.Error()}
+		return nil, fmt.Errorf("getting remote addr: %s", err)
 	}
 
-	scheme := "http://"
-	if s.isSsl(req) {
-		scheme = "https://"
+	family := "IPv4"
+	if f := req.URL.Query().Get("family"); f != "" {
+		// TODO Change this to actually lookup the family of `host`
+		family = f
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("Access-Control-Allow-Origin", scheme+s.Config.Host)
-	w.Header().Set("Vary", "Origin")
+	var dnsResp *dns.Response
+	var whoisResp *whois.Response
+	var locationResponse *location.Response
+	var userAgentClient *uaparser.Client // TODO change this to be a ua.Response
 
-	json.NewEncoder(w).Encode(obj)
-}
+	if host != "" {
+		if req.URL.Query().Get("reverse") != "false" {
+			addToWg(wg, func() {
+				dnsResp = dns.HandleReverseDNS(ctx, host)
+			})
+		}
 
-// WriteText takes the given tmpl and data, and returns appropriate text/plain to the user
-func (s *DefaultServer) WriteText(w http.ResponseWriter, req *http.Request, tmpl *template.Template, data interface{}, err error) {
-	w.Header().Set("Content-Type", "text/plain")
-
-	if err == nil {
-		err = tmpl.Execute(w, data)
+		if req.URL.Query().Get("whois") != "false" {
+			addToWg(wg, func() {
+				whoisResp = whois.Handle(ctx, host)
+			})
+		}
 	}
 
-	if err != nil {
-		w.WriteHeader(500)
-		w.Write([]byte(err.Error()))
-		return
+	if req.URL.Query().Get("ua") != "false" {
+		if useragent := req.Header.Get("User-Agent"); useragent != "" {
+			addToWg(wg, func() {
+				userAgentClient = ua.DetermineUA(useragent)
+			})
+		}
 	}
+
+	addToWg(wg, func() {
+		locationResponse = location.Handle(s.Config, req)
+	})
+
+	requestID := req.Header.Get(s.Config.RequestIDHeader)
+
+	// Remove all headers we don't want to display to the user
+	for _, remove := range s.Config.DisallowedHeaders {
+		req.Header.Del(remove)
+	}
+
+	// Wait for all the responses to come back
+	wg.Wait()
+
+	return &Response{
+		RequestID: requestID,
+
+		RemoteAddr:        host,
+		RemoteAddrFamily:  family,
+		RemoteAddrReverse: dnsResp,
+		RemoteAddrWhois:   whoisResp,
+
+		ActualRemoteAddr: req.RemoteAddr,
+
+		UserAgent: userAgentClient,
+		Location:  locationResponse,
+
+		Method: req.Method,
+		URL:    req.URL.String(),
+		Proto:  req.Proto,
+		Header: req.Header,
+	}, nil
 }
