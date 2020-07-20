@@ -36,16 +36,21 @@ type DefaultServer struct {
 // URLHeaders sets both the scheme and host in the Request.URL
 func URLHeaders(h http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
-		scheme := "http"
-		if r.TLS != nil {
-			scheme = "https"
+		if r.URL.Scheme == "" {
+			scheme := "http"
+			if r.TLS != nil {
+				scheme = "https"
+			}
+			r.URL.Scheme = scheme
 		}
-		r.URL.Scheme = scheme
 
-		if r.Host != "" {
-			// Set the host with the value received in the request
-			r.URL.Host = r.Host
+		if r.URL.Host == "" {
+			if r.Host != "" {
+				// Set the host with the value received in the request
+				r.URL.Host = r.Host
+			}
 		}
+
 		// Call the next handler in the chain.
 		h.ServeHTTP(w, r)
 	}
@@ -63,9 +68,8 @@ func Register(r *mux.Router, config *conf.Config) { // TODO Refactor so we don't
 	secureConfig := secure.Options{
 		IsDevelopment: config.Debug,
 
-		// TODO Fix this (it causes constant 301s) every since I implemented URLHeaders
-		// SSLRedirect: true,
-		// SSLHost:     "", // Use same host
+		SSLRedirect: true,
+		SSLHost:     "", // Use same host
 
 		// Ensure the client is using HTTPS
 		STSSeconds:           365 * 24 * 60 * 60,
