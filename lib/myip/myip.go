@@ -18,42 +18,16 @@ package myip
 
 import (
 	"fmt"
-	"net"
 	"net/http"
 	"sync"
 
-	"github.com/gorilla/mux"
 	"github.com/ua-parser/uap-go/uaparser"
-	"github.com/unrolled/secure"
 
-	"bramp.net/myip/lib/conf"
 	"bramp.net/myip/lib/dns"
 	"bramp.net/myip/lib/location"
 	"bramp.net/myip/lib/ua"
 	"bramp.net/myip/lib/whois"
 )
-
-// Server is the interface all instances of the myip application should implement.
-type Server interface {
-	GetRemoteAddr(req *http.Request) (string, error)
-
-	MyIPHandler(req *http.Request) (*Response, error)
-
-	// TODO Merge CLI and JSON together, and use a different marshallers.
-	// CLI index page
-	CLIHandler(w http.ResponseWriter, req *http.Request)
-
-	// JSON index page
-	JSONHandler(w http.ResponseWriter, req *http.Request)
-
-	// Web-app config
-	ConfigJSHandler(w http.ResponseWriter, _ *http.Request)
-}
-
-// DefaultServer is a default implementation of Server with some good defaults.
-type DefaultServer struct {
-	Config *conf.Config
-}
 
 // Response is a normal response.
 type Response struct {
@@ -76,76 +50,6 @@ type Response struct {
 	UserAgent *uaparser.Client   `json:",omitempty"` // TODO Create a ua.Response
 
 	Insights map[string]string `json:",omitempty"`
-}
-
-// Register this myip.Server. Should only be called once.
-func Register(r *mux.Router, config *conf.Config) { // TODO Refactor so we don't need config here
-	app := &DefaultServer{
-		Config: config,
-	}
-
-	// Documented here: https://godoc.org/github.com/unrolled/secure#Options
-	secureConfig := secure.Options{
-		IsDevelopment: config.Debug,
-
-		SSLRedirect: true,
-		SSLHost:     "", // Use same host
-
-		// Ensure the client is using HTTPS
-		STSSeconds:           365 * 24 * 60 * 60,
-		STSIncludeSubdomains: true,
-		STSPreload:           true,
-
-		FrameDeny:          true, // Don't allow the page embedded in a frame.
-		ContentTypeNosniff: true, // Trust the Content-Type and don't second guess them.
-		BrowserXssFilter:   true,
-
-		// TODO Find CSP generator to make the next line shorter, and less error prone
-		ContentSecurityPolicy: "default-src 'self';" +
-			" connect-src *;" +
-			" script-src 'self' www.google-analytics.com;" +
-			" img-src data: 'self' www.google-analytics.com maps.googleapis.com;",
-	}
-
-	r.Use(secure.New(secureConfig).Handler)
-
-	// Fetching with `curl`
-	r.MatcherFunc(isCLI).HandlerFunc(app.CLIHandler)
-
-	r.HandleFunc("/json", app.JSONHandler)
-	r.HandleFunc("/config.js", app.ConfigJSHandler)
-
-	// Serve the static content
-	fs := http.FileServer(http.Dir("./static/"))
-	r.PathPrefix("/").Handler(fs)
-}
-
-// GetRemoteAddr returns the remote address, either the real one, or if in debug mode one passed as a query param.
-func (s *DefaultServer) GetRemoteAddr(req *http.Request) (string, error) {
-	// If debug allow replacing the host
-	if host := req.URL.Query().Get("host"); host != "" && s.Config.Debug {
-		return host, nil
-	}
-
-	// Some systems (namely App Engine Flex) encode the remoteAddr with a port
-	host, _, err := net.SplitHostPort(req.RemoteAddr)
-	if err != nil {
-		// For now assume the RemoteAddr was just a addr (with no port)
-		// TODO check if remoteAddr is a valid IPv6/IPv4 address
-		return req.RemoteAddr, nil
-	}
-
-	return host, err
-}
-
-// addToWg executes the function in a new gorountine and adds it to the WaitGroup, calling wg.Done
-// when finished. This makes it a little eaiser to use the WaitGroup.
-func addToWg(wg *sync.WaitGroup, f func()) {
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		f()
-	}()
 }
 
 // MyIPHandler is the main code to handle a IP lookup.
@@ -223,4 +127,14 @@ func (s *DefaultServer) MyIPHandler(req *http.Request) (*Response, error) {
 		Proto:  req.Proto,
 		Header: req.Header,
 	}, nil
+}
+
+// addToWg executes the function in a new gorountine and adds it to the WaitGroup, calling wg.Done
+// when finished. This makes it a little eaiser to use the WaitGroup.
+func addToWg(wg *sync.WaitGroup, f func()) {
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		f()
+	}()
 }

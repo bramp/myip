@@ -32,8 +32,8 @@ var debugConfig = &conf.Config{
 	Debug: true,
 
 	Host:  "localhost:8080",
-	Host4: "127.0.0.1:8080",
-	Host6: "[::1]:8080",
+	Host4: "ip4-localhost.bramp.net:8080", // "127.0.0.1:8080",
+	Host6: "ip6-localhost.bramp.net:8080", // "[::1]:8080",
 
 	MapsAPIKey: "AIzaSyA6-HIkxuJEX6Hf3rzVx07no32YM3N5V9s",
 
