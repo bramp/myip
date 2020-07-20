@@ -27,6 +27,7 @@ import (
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/ua-parser/uap-go/uaparser"
+	"github.com/unrolled/secure"
 
 	"bramp.net/myip/lib/conf"
 	"bramp.net/myip/lib/dns"
@@ -101,21 +102,35 @@ var cliTmpl = template.Must(template.New("test").Parse(
 		"ID: {{.RequestID}}\n"))
 
 // Register this myip.Server. Should only be called once.
-func Register(app Server) {
+func Register(app Server, config *conf.Config) { // TODO Refactor so we don't need config here
+
+	// Documented here: https://godoc.org/github.com/unrolled/secure#Options
+	secureMiddleware := secure.New(secure.Options{
+		IsDevelopment: config.Debug,
+
+		SSLRedirect:     true,
+		SSLHost:         "", // Use same host
+		SSLProxyHeaders: map[string]string{"X-Forwarded-Proto": "https"},
+
+		// Ensure the client is using HTTPS
+		STSSeconds:           365 * 24 * 60 * 60,
+		STSIncludeSubdomains: true,
+		STSPreload:           true,
+
+		FrameDeny:          true, // Don't allow the page embedded in a frame.
+		ContentTypeNosniff: true, // Trust the Content-Type and don't second guess them.
+		BrowserXssFilter:   true,
+
+		// TODO Find CSP generator to make the next line shorter, and less error prone
+		ContentSecurityPolicy: "default-src 'self';" +
+			" connect-src *;" +
+			" script-src 'self' www.google-analytics.com;" +
+			" img-src data: 'self' www.google-analytics.com maps.googleapis.com;",
+	})
+
 	r := mux.NewRouter()
+	r.Use(secureMiddleware.Handler)
 
-	/*
-		// TODO Readd CSP (maybe https://github.com/unrolled/secure)
-		rootHandler := func(w http.ResponseWriter, req *http.Request) {
-			// TODO Find CSP generator to make the next line shorter, and less error prone
-			w.Header().Add("Content-Security-Policy", "default-src 'self';"+
-				" connect-src *;"+
-				" script-src 'self' www.google-analytics.com;"+
-				" img-src data: 'self' www.google-analytics.com maps.googleapis.com;")
-
-			http.ServeFile(w, req, "static/index.html")
-		}
-	*/
 	cliHandler := func(w http.ResponseWriter, req *http.Request) {
 		response, err := app.HandleMyIP(req)
 		app.WriteText(w, req, cliTmpl, response, err)
@@ -179,11 +194,14 @@ func (s *DefaultServer) WriteJSON(w http.ResponseWriter, req *http.Request, obj 
 
 	scheme := "http://"
 	if req.TLS != nil {
+		// TODO If proxied the client may be SSL but the proxy->us may not be.
 		scheme = "https://"
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("Access-Control-Allow-Origin", scheme+s.Config.Host)
+	w.Header().Set("Vary", "Origin")
+
 	json.NewEncoder(w).Encode(obj)
 }
 

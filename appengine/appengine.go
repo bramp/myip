@@ -33,14 +33,9 @@ import (
 	"google.golang.org/appengine"
 )
 
-func ternary(b bool, t, f string) string {
-	if b {
-		return t
-	}
-	return f
-}
-
 var debugConfig = &conf.Config{
+	Debug: true,
+
 	Host:  "localhost:8080",
 	Host4: "127.0.0.1:8080",
 	Host6: "[::1]:8080",
@@ -65,8 +60,6 @@ var prodConfig = &conf.Config{
 }
 
 var appengineDefaultConfig = &conf.Config{
-	Debug: true,
-
 	IPHeader: "X-Appengine-User-Ip",
 
 	RequestIDHeader: "X-Cloud-Trace-Context",
@@ -122,7 +115,7 @@ func main() {
 		myip.DefaultServer{
 			Config: config,
 		},
-	})
+	}, config)
 
 	http.HandleFunc("/_ah/warmup", func(w http.ResponseWriter, r *http.Request) {
 		log.Println("warmup done")
