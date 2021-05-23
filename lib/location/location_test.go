@@ -15,6 +15,7 @@
 package location
 
 import (
+	"encoding/base64"
 	"testing"
 )
 
@@ -34,6 +35,39 @@ func TestParseLatLong(t *testing.T) {
 		}
 		if lat != test.wantLat || long != test.wantLong {
 			t.Errorf("parseLatLong(%q) = (%v, %v), want (%v, %v)", test.input, lat, long, test.wantLat, test.wantLong)
+		}
+	}
+}
+
+func TestGoogleMapURLBuilder(t *testing.T) {
+	key := "wa8mKbuSbJ6oTGcJelB8HaqQMqQ=" // This is not my real secret :)
+	keyBytes, err := base64.URLEncoding.DecodeString(key)
+	if err != nil {
+		t.Fatalf("failed to decode the MapsAPISigningKey: %v", err)
+		return
+	}
+
+	b := &googleMapURLBuilder{
+		Key:    "1234",
+		Secret: keyBytes,
+	}
+
+	data := []struct {
+		input *Response
+		want  string
+	}{
+		{
+			input: &Response{
+				Lat:  1.23,
+				Long: 4.56,
+			},
+			want: "https://maps.googleapis.com/maps/api/staticmap?size=640x400&markers=color:red%7C1.230000,4.560000&key=1234&signature=gQ7ZbZzYOHuwsVjdsUNY30EoDCE=",
+		},
+	}
+
+	for _, test := range data {
+		if got := b.build(test.input); got != test.want {
+			t.Errorf("build(%v) = %q, want %q", test.input, got, test.want)
 		}
 	}
 }

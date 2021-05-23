@@ -57,35 +57,3 @@ myipApp.filter('firstWord', function firstWord($filter) {
         return data[0];
     };
 });
-
-myipApp.filter('mapUrl', function mapUrl($filter) {
-    mapUrl.$inject = ['$filter'];
-
-    return function(data) {
-        if (data) {
-            var url = "https://maps.googleapis.com/maps/api/staticmap";
-            url += "?key=" + MAPS_API_KEY;
-            url += "&size=640x400";
-            url += "&markers=color:red%7C";
-
-            if ('Lat' in data && 'Long' in data && data['Lat'] != 0 && data['Long'] != 0) {
-                return url + data['Lat'] + "," + data['Long']
-            }
-
-            if ('City' in data && data['City'] != "") {
-                return url + data['City']
-            }
-
-            if ('Region' in data && data['Region'] != "") {
-                return url + data['Region']
-            }
-
-            if ('Country' in data && data['Country'] != "") {
-                return url + data['Country']
-            }
-        }
-
-        return "";
-    };
-});
-

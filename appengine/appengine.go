@@ -16,16 +16,21 @@
 package main // import "bramp.net/myip/appengine"
 
 import (
+	"context"
+	"encoding/base64"
+	"fmt"
 	"net/http"
 	"os"
 
 	"bramp.net/myip/lib/conf"
 	"bramp.net/myip/lib/myip"
 
+	secretmanager "cloud.google.com/go/secretmanager/apiv1"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/appengine"
+	secretmanagerpb "google.golang.org/genproto/googleapis/cloud/secretmanager/v1"
 )
 
 var debugConfig = &conf.Config{
@@ -86,30 +91,7 @@ var appengineDefaultConfig = &conf.Config{
 	},
 }
 
-func config() *conf.Config {
-	config := debugConfig
-	log.SetLevel(log.DebugLevel)
-
-	if appengine.IsAppEngine() {
-		config = prodConfig
-		log.SetLevel(log.WarnLevel)
-
-		var err error
-		config, err = conf.ApplyDefaults(config, appengineDefaultConfig)
-		if err != nil {
-			log.Fatalf("Failed to ApplyDefaults: %s", err)
-		}
-
-	}
-
-	config.Version = Version
-	config.BuildTime = BuildTime
-
-	return config
-}
-
 func main() {
-
 	r := mux.NewRouter()
 
 	// IsAppEngine tests if running on AppEngine
@@ -141,8 +123,72 @@ func main() {
 		Handler: handlers.CombinedLoggingHandler(os.Stderr, r),
 	}
 
-	log.Printf("Listening on port %s", port)
+	log.Printf("Listening on port %s for %s", port, config.Host)
 	if err := s.ListenAndServe(); err != nil {
 		log.Fatalf("ListenAndServe() failed: %s:", err)
 	}
+}
+
+func config() *conf.Config {
+	config := debugConfig
+	log.SetLevel(log.DebugLevel)
+
+	if appengine.IsAppEngine() {
+		config = prodConfig
+		log.SetLevel(log.WarnLevel)
+
+		var err error
+		config, err = conf.ApplyDefaults(config, appengineDefaultConfig)
+		if err != nil {
+			log.Fatalf("Failed to ApplyDefaults: %s", err)
+		}
+
+		// Load the MapsAPISigningKey secret key
+		loadSecrets(config)
+	}
+
+	config.Version = Version
+	config.BuildTime = BuildTime
+
+	return config
+}
+
+// Some keys are stored in GCP Secret Manager.
+func loadSecrets(config *conf.Config) {
+	ctx := context.Background()
+	client, err := secretmanager.NewClient(ctx)
+	if err != nil {
+		log.Errorf("failed to setup secretmanager client: %v", err)
+		return
+	}
+	defer client.Close()
+
+	// GCP project in which to store secrets in Secret Manager.
+	projectID := os.Getenv("GOOGLE_CLOUD_PROJECT")
+	keyBytes, err := accessSecret(ctx, client, projectID, "map_static_signing")
+	if err != nil {
+		log.Errorf("failed to access secret: %v", err)
+		return
+	}
+
+	key, err := base64.URLEncoding.DecodeString(string(keyBytes))
+	if err != nil {
+		log.Errorf("failed to decode the MapsAPISigningKey: %v", err)
+		return
+	}
+
+	config.MapsAPISigningKey = key
+}
+
+func accessSecret(ctx context.Context, client *secretmanager.Client, projectID, secretID string) ([]byte, error) {
+	accessRequest := &secretmanagerpb.AccessSecretVersionRequest{
+		Name: fmt.Sprintf("projects/%s/secrets/%s/versions/latest", projectID, secretID),
+	}
+
+	result, err := client.AccessSecretVersion(ctx, accessRequest)
+	if err != nil {
+		return nil, err
+	}
+
+	return result.Payload.Data, nil
 }

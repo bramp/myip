@@ -60,6 +60,10 @@ type Config struct {
 	// MapsAPIKey is used to render static Google Maps.
 	// Request your own at https://developers.google.com/maps/documentation/static-maps/
 	MapsAPIKey string `json:",omitempty"`
+
+	// MapsAPISigningKey is a secret key that allows you to sign the map URL request
+	// to prove we are the owning of the static map api key.
+	MapsAPISigningKey []byte `json:",omitempty"`
 }
 
 // ApplyDefaults returns a new config with any zero field in config, set to the default value.

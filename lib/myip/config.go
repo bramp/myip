@@ -29,9 +29,7 @@ var MAIN_HOST = "{{.Host}}";
 var SERVERS = {
    "IPv4": "{{.Host4}}",
    "IPv6": "{{.Host6}}"
-};
-
-var MAPS_API_KEY = "{{.MapsAPIKey}}";`
+};`
 
 // ConfigJSHandler returns the config javascript.
 func (s *DefaultServer) ConfigJSHandler(w http.ResponseWriter, _ *http.Request) {
