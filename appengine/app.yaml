@@ -1,4 +1,4 @@
-runtime: go114
+runtime: go115
 
 main: bramp.net/myip/appengine
 

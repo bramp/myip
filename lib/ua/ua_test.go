@@ -38,7 +38,9 @@ func TestDetermineUA(t *testing.T) {
 			Patch:  "6",
 		},
 		Device: &uaparser.Device{
-			Family: "Other",
+			Family: "Mac",
+			Brand:  "Apple",
+			Model:  "Mac",
 		},
 	}
 
