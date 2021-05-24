@@ -1,4 +1,4 @@
-.PHONY: default install-tools check-update debug-env check imports fmt vet lint clean veryclean test deps serve deploy stage version gocloud
+.PHONY: default check-update debug-env check imports fmt vet lint clean veryclean test deps serve deploy stage version gocloud
 
 default: test
 
@@ -10,7 +10,6 @@ ROOT = $(realpath $(TOP))
 APP_YAML = appengine/app.yaml
 NODE_MODULES = $(ROOT)/node_modules/.bin
 GOCLOUD = $(shell command -v gcloud 2> /dev/null)
-
 
 # Prints out all the GO environment variables. Useful to see the state
 # of what is going on with the GOPATH
@@ -24,15 +23,10 @@ package-lock.json: package.json
 
 node_modules: package-lock.json
 
-# We don't add this target as a dependency, because the `go get` are quite expensive to run.
-install-tools: node_modules
-	# TODO Do I need these:
-	go get -u golang.org/x/lint/golint
-	go get -u golang.org/x/tools/cmd/goimports
-	go get -u github.com/mattn/goveralls
-
-check-updates: install-tools
+check-updates: node_modules
 	$(NODE_MODULES)/ncu
+	go mod tidy
+	go get -u all
 
 deps: node_modules
 	$(NODE_MODULES)/bower install
