@@ -5,7 +5,7 @@
   "repository": "https://github.com/bramp/myip",
   "license": "Apache-2.0",
   "devDependencies": {
-    "bower": "^1.8.12",
-    "npm-check-updates": "11.5.13"
+    "bower": "^1.8.13",
+    "npm-check-updates": "12.2.1"
   }
 }
