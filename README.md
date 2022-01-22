@@ -82,6 +82,7 @@ make test
 To keep libraries up to date run:
 
 ```shell
+make check-updates
 make veryclean
 make test
 ```
