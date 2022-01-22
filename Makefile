@@ -16,20 +16,20 @@ GOCLOUD = $(shell command -v gcloud 2> /dev/null)
 debug-env:
 	printenv | grep 'GO'
 
-# Only update node_modules if the package.json has changed.
-package-lock.json: package.json
-	npm install
+# Only update yarn if the package.json has changed.
+yarn.lock: package.json
+	yarn
 	touch $@
 
-node_modules: package-lock.json
+deps: static/bower_components
 
-check-updates: node_modules
+static/bower_components: yarn.lock
+	yarn install
+
+check-updates:
 	$(NODE_MODULES)/ncu
 	go mod tidy
 	go get -u all
-
-deps: node_modules
-	$(NODE_MODULES)/bower install
 
 check: deps fmt vet lint
 

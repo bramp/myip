@@ -5,7 +5,18 @@
   "repository": "https://github.com/bramp/myip",
   "license": "Apache-2.0",
   "devDependencies": {
-    "bower": "^1.8.13",
     "npm-check-updates": "12.2.1"
+  },
+  "dependencies": {
+    "@bower_components/angular": "angular/bower-angular#1.6.x",
+    "@bower_components/angular-bootstrap": "angular-ui/bootstrap-bower#2.5.x",
+    "@bower_components/bootstrap": "twbs/bootstrap#3.3.x",
+    "@bower_components/components-font-awesome": "components/font-awesome#4.7.x"
+  },
+  "engines": {
+    "yarn": ">= 1.0.0"
+  },
+  "scripts": {
+    "postinstall": "node -e \"try { require('fs').symlinkSync(require('path').resolve('node_modules/@bower_components'), 'static/bower_components', 'junction') } catch (e) { }\""
   }
 }
