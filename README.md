@@ -31,12 +31,6 @@ This project was quite literally hacked out in one weekend, and was my first App
 * [Make](https://www.gnu.org/software/make/) (which comes on Linux or Mac)
 * [npm](https://www.npmjs.com/)
 
-Then run
-
-```shell
-make install-tools
-```
-
 ### Domains
 
 As designed, this Go application will run on the Standard Google App Engine. It requires
