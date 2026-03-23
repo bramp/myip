@@ -1,0 +1,43 @@
+name: Deploy to App Engine
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+*'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Required for git describe
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.26'
+
+      - name: Update Version in code
+        run: |
+          VERSION=$(git describe --long --tags --dirty --always)
+          BUILD_TIME=$(date '+%Y-%m-%d %T %Z')
+          sed -i "s/\(Version[^\"]*\"\)[^\"]*/\1$VERSION/" appengine/version.go
+          sed -i "s/\(BuildTime[^\"]*\"\)[^\"]*/\1$BUILD_TIME/" appengine/version.go
+
+      - id: 'auth'
+        uses: 'google-github-actions/auth@v2'
+        with:
+          workload_identity_provider: '${{ secrets.WIF_PROVIDER_NAME }}'
+          service_account: '${{ secrets.GCP_SERVICE_ACCOUNT }}'
+
+      - name: 'Deploy to App Engine'
+        uses: 'google-github-actions/deploy-appengine@v2'
+        with:
+          project_id: '${{ secrets.GCP_PROJECT_ID }}'
+          deliverables: 'appengine/app.yaml'
+          promote: true

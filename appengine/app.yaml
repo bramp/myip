@@ -1,6 +1,9 @@
-runtime: go115
+runtime: go126
 
 main: bramp.net/myip/appengine
+
+automatic_scaling:
+  max_instances: 1
 
 inbound_services:
   - warmup
