@@ -22,12 +22,31 @@ jobs:
         with:
           go-version: '1.26'
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'yarn'
+
+      - name: Install dependencies
+        run: yarn install
+
       - name: Update Version in code
         run: |
           VERSION=$(git describe --long --tags --dirty --always)
           BUILD_TIME=$(date '+%Y-%m-%d %T %Z')
           sed -i "s/\(Version[^\"]*\"\)[^\"]*/\1$VERSION/" appengine/version.go
           sed -i "s/\(BuildTime[^\"]*\"\)[^\"]*/\1$BUILD_TIME/" appengine/version.go
+
+      - name: 'Check secrets'
+        env:
+          WIF_PROVIDER_NAME: ${{ secrets.WIF_PROVIDER_NAME }}
+          GCP_SERVICE_ACCOUNT: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+          GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+        run: |
+          if [ -z "$WIF_PROVIDER_NAME" ]; then echo "WIF_PROVIDER_NAME secret is not set"; exit 1; fi
+          if [ -z "$GCP_SERVICE_ACCOUNT" ]; then echo "GCP_SERVICE_ACCOUNT secret is not set"; exit 1; fi
+          if [ -z "$GCP_PROJECT_ID" ]; then echo "GCP_PROJECT_ID secret is not set"; exit 1; fi
 
       - id: 'auth'
         uses: 'google-github-actions/auth@v2'
