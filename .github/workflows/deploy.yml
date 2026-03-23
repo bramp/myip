@@ -35,6 +35,12 @@ jobs:
           workload_identity_provider: '${{ secrets.WIF_PROVIDER_NAME }}'
           service_account: '${{ secrets.GCP_SERVICE_ACCOUNT }}'
 
+      - name: 'Set up Cloud SDK'
+        uses: 'google-github-actions/setup-gcloud@v2'
+        with:
+          version: 'latest'
+          install_components: 'app-engine-go'
+
       - name: 'Deploy to App Engine'
         uses: 'google-github-actions/deploy-appengine@v2'
         with:
