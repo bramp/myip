@@ -15,9 +15,10 @@
 package ua
 
 import (
+	"testing"
+
 	"github.com/kylelemons/godebug/pretty"
 	"github.com/ua-parser/uap-go/uaparser"
-	"testing"
 )
 
 func TestDetermineUA(t *testing.T) {

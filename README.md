@@ -39,7 +39,7 @@ I have ip.bramp.net that has both A and AAAA records, ip4.bramp.net that has onl
 and ip6.bramp.net that only has AAAA records. These all point to the same App Engine instance.
 
 ```
-$ dig ip.bramp.net 
+$ dig ip.bramp.net
 ip.bramp.net.		300	IN	A	216.239.32.21
 ip.bramp.net.		300	IN	AAAA	2001:4860:4802:32::15
 
@@ -120,4 +120,3 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ```
-

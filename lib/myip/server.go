@@ -26,8 +26,6 @@ type Server interface {
 	ConfigJSHandler(w http.ResponseWriter, _ *http.Request)
 }
 
-const host = "Host"
-
 // DefaultServer is a default implementation of Server with some good defaults.
 type DefaultServer struct {
 	Config *conf.Config

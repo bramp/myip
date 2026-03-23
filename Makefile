@@ -1,6 +1,8 @@
-.PHONY: default check-update debug-env check imports fmt vet lint clean veryclean test deps serve deploy stage version gocloud
+.PHONY: all analyze upgrade fix test-ci default check-update debug-env check imports fmt vet lint clean veryclean test deps serve deploy stage version gocloud
 
-default: test
+default: all
+
+all: format analyze test
 
 #get the path to this Makefile, its the last in this list
 #MAKEFILE_LIST is the list of Makefiles that are executed.
@@ -31,7 +33,16 @@ check-updates:
 	go mod tidy
 	go get -u all
 
+upgrade:
+	go mod tidy
+	go get -u ./...
+	go mod tidy
+
+analyze: vet lint
+
 check: deps fmt vet lint
+
+format: fmt
 
 fmt:
 	go fmt ./...
@@ -40,10 +51,16 @@ vet:
 	go vet -v ./...
 
 lint:
-	golint -set_exit_status ./...
+	staticcheck ./...
 
 test: check
 	go test ./...
+
+test-ci: test
+
+fix:
+	go fmt ./...
+	go fix ./...
 
 coverage: check
 	#goapp test -covermode=count -coverprofile=profile.cov lib/...
@@ -66,11 +83,11 @@ ifndef GOCLOUD
 	$(error "gcloud is not available. Please install the Google Cloud SDK https://cloud.google.com/sdk/docs")
 endif
 
-deploy: gcloud version check 
+deploy: gcloud version check
 	gcloud app deploy --project myip-158305 --appyaml $(APP_YAML)
 
 # Install but don't promote to the serving version
-stage: gcloud version check 
+stage: gcloud version check
 	gcloud app deploy --project myip-158305 --appyaml $(APP_YAML) --no-promote
 
 clean:
@@ -78,4 +95,3 @@ clean:
 
 veryclean: clean
 	rm -rf node_modules
-

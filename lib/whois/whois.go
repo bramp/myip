@@ -71,8 +71,9 @@ func parseWhois(response string) (map[string]string, error) {
 // Runs in O(n^2) time
 //
 // This implementation was adapted from:
-// 	 https://en.wikibooks.org/wiki/Algorithm_Implementation/Strings/Longest_common_substring
-//   Under the Creative Commons Attribution-ShareAlike License.
+//
+//		 https://en.wikibooks.org/wiki/Algorithm_Implementation/Strings/Longest_common_substring
+//	  Under the Creative Commons Attribution-ShareAlike License.
 func longestCommonString(lines []string) (int, int) {
 
 	// Matrix to keep track of the longest match found starting on each line
@@ -184,6 +185,9 @@ func QueryWhois(ctx context.Context, query, host string) (string, error) {
 // and the 2nd to that server.
 func QueryIPWhois(ctx context.Context, ipAddr string) (string, error) {
 	response, err := QueryWhois(ctx, ipAddr, ianaWhoisServer)
+	if err != nil {
+		return "", err
+	}
 
 	// IANA returns a key value response with a "whois: ..." line to indicate the whois
 	// server for the owner of this IP range.

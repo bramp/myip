@@ -15,11 +15,12 @@
 package whois
 
 import (
-	"github.com/kylelemons/godebug/pretty"
-	"io/ioutil"
+	"os"
 	"path"
 	"strings"
 	"testing"
+
+	"github.com/kylelemons/godebug/pretty"
 )
 
 func TestParseWhois(t *testing.T) {
@@ -35,7 +36,7 @@ func TestParseWhois(t *testing.T) {
 	}
 
 	for _, test := range data {
-		input, err := ioutil.ReadFile(path.Join("testdata", test.result))
+		input, err := os.ReadFile(path.Join("testdata", test.result))
 		if err != nil {
 			t.Fatalf("Failed to read test data %q: %s", test.result, err)
 		}
@@ -63,12 +64,12 @@ func TestCleanupWhois(t *testing.T) {
 	}
 
 	for _, test := range data {
-		input, err := ioutil.ReadFile(path.Join("testdata", test.input))
+		input, err := os.ReadFile(path.Join("testdata", test.input))
 		if err != nil {
 			t.Fatalf("Failed to read test data %q: %s", test.input, err)
 		}
 
-		want, err := ioutil.ReadFile(path.Join("testdata", test.want))
+		want, err := os.ReadFile(path.Join("testdata", test.want))
 		if err != nil {
 			t.Fatalf("Failed to read test data %q: %s", test.want, err)
 		}

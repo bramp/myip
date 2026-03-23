@@ -17,11 +17,6 @@ package dns
 import (
 	"context"
 	"net"
-	"time"
-)
-
-const (
-	dnsTimeout = 4 * time.Second
 )
 
 var (

@@ -32,5 +32,3 @@ before_install:
 
 after_success:
   - $HOME/gopath/bin/goveralls -service=travis-ci
-
-
