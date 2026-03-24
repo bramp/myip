@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-var myipApp = angular.module('myip', ['ui.bootstrap'], function MyIPApp($locationProvider) {
+var myipApp = angular.module('myip', [], function MyIPApp($locationProvider) {
     MyIPApp.$inject = ['$locationProvider'];
 
     $locationProvider.html5Mode(true).hashPrefix('');
@@ -55,5 +55,13 @@ myipApp.filter('firstWord', function firstWord($filter) {
         if(!data) return data;
         data = data.split(' ');
         return data[0];
+    };
+});
+
+myipApp.filter('stripPort', function stripPort() {
+    return function(data) {
+        if(!data) return data;
+        // This regex handles IPv4 (1.2.3.4:80) and IPv6 ([::1]:80)
+        return data.replace(/(:\d+)?$/, '').replace(/^\[(.+)\]$/, '$1');
     };
 });

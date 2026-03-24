@@ -14,13 +14,12 @@
     <!-- TODO minify / combine these files -->
     <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.css" />
     <link rel="stylesheet" href="bower_components/angular/angular-csp.css" />
-    <link rel="stylesheet" href="bower_components/angular-bootstrap/ui-bootstrap-csp.css" />
     <link rel="stylesheet" href="github-corners.css" />
-    <link rel="stylesheet" href="bower_components/components-font-awesome/css/font-awesome.min.css" />
+    <link rel="stylesheet" href="bower_components/components-font-awesome/css/all.min.css" />
     <link rel="stylesheet" href="app.css" />
 
     <script src="bower_components/angular/angular.min.js"></script>
-    <script src="bower_components/angular-bootstrap/ui-bootstrap.min.js"></script>
+    <script src="bower_components/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="config.js"></script>
     <script src="app.js"></script>
 </head>
@@ -34,151 +33,168 @@
         </svg>
     </a>
 
-    <div class="container">
-        <div class="page-header">
-            <h1><small>(A better)</small> What's My IP Address?</h1>
+    <div class="container py-4">
+        <div class="pb-2 mb-4 border-bottom">
+            <h1 class="display-5 fw-bold"><small class="text-muted">(A better)</small> What's My IP Address?</h1>
             <p class="lead">Determines both your IPv4 and IPv6 addresses, issues WHOIS and reverse DNS lookups, and shows all your HTTP headers.</p>
         </div>
 
-        <div ng-repeat="address in addresses" class="ng-cloak panel panel-default panel-primary">
-            <div class="panel-heading">
-                <h2><i ng-if="address.Insights.AddressMismatch" class="fa fa-exclamation-triangle"></i>
+        <div ng-repeat="address in addresses" class="ng-cloak card mb-4 border-primary">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center"
+                 ng-attr-role="{{!address.Error ? 'button' : undefined}}"
+                 ng-attr-data-bs-toggle="{{!address.Error ? 'collapse' : undefined}}"
+                 data-bs-target="#details-{{$index}}"
+                 aria-expanded="false"
+                 aria-controls="details-{{$index}}">
+                <h2 class="h5 mb-0">
+                    <i ng-if="address.Insights.AddressMismatch" class="fa-solid fa-triangle-exclamation me-2"></i>
                     {{address.RemoteAddrFamily}}:
-                    <span ng-if="address.Error">&lt;error: {{address.Error}}&gt;</span>
-                    <span ng-if="!address.Error">{{address.RemoteAddr}}
-                        <div class="pull-right"><button type="button" class="btn btn-default" ng-click="address.isOpen = !address.isOpen">View details &raquo;</button></div>
-
-                        <span ng-if="address.RemoteAddrReverse.Error">&lt;dns error: {{address.RemoteAddrReverse.Error}}&gt;</span>
-                        <span ng-if="!address.RemoteAddrReverse.Error">
+                    <span ng-if="address.Error" class="text-warning">&lt;error: {{address.Error}}&gt;</span>
+                    <span ng-if="!address.Error">
+                        {{address.RemoteAddr}}
+                        <small class="ms-2 opacity-75 fw-normal" ng-if="!address.RemoteAddrReverse.Error">
                             (
                             <span ng-if="address.RemoteAddrReverse.Names" ng-repeat="name in address.RemoteAddrReverse.Names">{{name}}<span ng-if="!$last">, </span></span>
-                            <span ng-if="!address.RemoteAddrReverse.Names">no dns result</span>
+                            <span ng-if="address.RemoteAddrReverse.Names.length == 0">no dns result</span>
                             )
-                        </span>
+                        </small>
+                        <small class="ms-2 text-warning fw-normal" ng-if="address.RemoteAddrReverse.Error">
+                            &lt;dns error: {{address.RemoteAddrReverse.Error}}&gt;
+                        </small>
                     </span>
                 </h2>
+                <div class="d-flex align-items-center">
+                    <button ng-if="!address.Error" type="button" class="btn btn-sm btn-outline-light" data-bs-toggle="collapse" data-bs-target="#details-{{$index}}">
+                        View details <i class="fa-solid fa-chevron-right ms-1"></i>
+                    </button>
+                </div>
             </div>
 
-            <div class="panel-body" uib-collapse="!address.isOpen">
-                <div class="row">
-                    <div class="col-md-12">
-                        <p class="lead" ng-if="address.ActualRemoteAddr != address.RemoteAddr">Actual: {{address.ActualRemoteAddr}}</p>
-
-                        <div ng-if="address.Insights.AddressMismatch" class="alert alert-warning">
-                            <p class="lead">
-                                <i class="fa fa-exclamation-triangle">&nbsp;</i>
+            <div id="details-{{$index}}" class="card-body collapse">
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <div ng-if="address.Insights.AddressMismatch" class="alert alert-warning d-flex align-items-center">
+                            <i class="fa-solid fa-triangle-exclamation fs-4 me-3"></i>
+                            <div>
                                 A {{address.RemoteAddrFamily}} request was sent but the server received a {{address.Insights.AddressMismatch}} request. This implies there is a proxy in the middle which could skew results.
-                            </p>
+                            </div>
                         </div>
 
-                        <div ng-if="address.Insights.Proxy" class="alert alert-info">
-                            <p class="lead">
-                                <i class="fa fa-info-circle"></i> You are using the {{address.Insights.Proxy}}.
-                            </p>
+                        <div ng-if="address.Insights.Proxy" class="alert alert-info d-flex align-items-center">
+                            <i class="fa-solid fa-circle-info fs-4 me-3"></i>
+                            <div>You are using the {{address.Insights.Proxy}}.</div>
                         </div>
                     </div>
                 </div>
 
-                <div class="row">
-                    <div class="col-md-1"><h3 class="side-title">HTTP</h3></div>
+                <div class="row mb-4">
+                    <div class="col-md-2 text-md-end text-muted border-end"><h3 class="h6 mt-1">HTTP</h3></div>
+                    <div class="col-md-10">
+                        <div class="table-responsive">
+                            <table class="table table-hover table-sm mb-0">
+                                <thead>
+                                    <tr>
+                                        <th colspan="2" class="text-primary font-monospace">{{address.Method}} {{address.URL}} {{address.Proto}}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr ng-if="(address.ActualRemoteAddr | stripPort) != address.RemoteAddr">
+                                        <td class="fw-bold">Actual Remote Addr</td>
+                                        <td class="text-break">{{address.ActualRemoteAddr}}</td>
+                                    </tr>
+                                    <tr ng-repeat="(header, values) in address.Header">
+                                        <td class="fw-bold">{{header}}</td>
+                                        <td class="text-break">
+                                            <span ng-repeat="value in values">{{value}}<span ng-if="!$last">, </span></span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
 
-                    <div class="col-md-11">
-                        <table class="table table-hover table-condensed">
-                            <thead>
-                            <tr>
-                                <th colspan="2">{{address.Method}} {{address.URL}} {{address.Proto}}</th>
-                            </tr>
-                            </thead>
+                <div class="row mb-4">
+                    <div class="col-md-2 text-md-end text-muted border-end"><h3 class="h6 mt-1">RDAP</h3></div>
+                    <div class="col-md-10">
+                        <div ng-if="address.RemoteAddrRDAP.Error && !address.RemoteAddrRDAP.Body" class="alert alert-danger py-2 px-3">{{address.RemoteAddrRDAP.Error}}</div>
+                        <pre ng-if="address.RemoteAddrRDAP.Body" class="bg-light p-3 border rounded small overflow-auto" style="max-height: 400px;">{{address.RemoteAddrRDAP.Body}}</pre>
+                    </div>
+                </div>
+
+                <div class="row mb-4" ng-if="address.RemoteAddrWhois">
+                    <div class="col-md-2 text-md-end text-muted border-end"><h3 class="h6 mt-1">Whois</h3></div>
+                    <div class="col-md-10">
+                        <div ng-if="address.RemoteAddrWhois.Error && !address.RemoteAddrWhois.Body" class="alert alert-danger py-2 px-3">{{address.RemoteAddrWhois.Error}}</div>
+                        <pre ng-if="address.RemoteAddrWhois.Body" class="bg-light p-3 border rounded small overflow-auto" style="max-height: 400px;">{{address.RemoteAddrWhois.Body}}</pre>
+                    </div>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-md-2 text-md-end text-muted border-end"><h3 class="h6 mt-1">User Agent</h3></div>
+                    <div class="col-md-10">
+                        <table class="table table-hover table-sm mb-0">
                             <tbody>
-                            <tr ng-repeat="(header, values) in address.Header">
-                                <td>{{header}}</td>
-                                <td class="table-data">
-                                    <span ng-repeat="value in values">{{value}}<span ng-if="!$last">, </span></span>
-                                </td>
-                            </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="col-md-1"><h3 class="side-title">RDAP</h3></div>
-
-                    <div class="col-md-11">
-                        <div ng-if="address.RemoteAddrRDAP.Error" class="alert alert-danger">{{address.RemoteAddrRDAP.Error}}</div>
-                        <pre ng-if="address.RemoteAddrRDAP.Body">{{address.RemoteAddrRDAP.Body}}</pre>
-                    </div>
-                </div>
-
-                <div class="row" ng-if="address.RemoteAddrWhois">
-                    <div class="col-md-1"><h3 class="side-title">Whois</h3></div>
-
-                    <div class="col-md-11">
-                        <div ng-if="address.RemoteAddrWhois.Error" class="alert alert-danger">{{address.RemoteAddrWhois.Error}}</div>
-                        <pre ng-if="address.RemoteAddrWhois.Body">{{address.RemoteAddrWhois.Body}}</pre>
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="col-md-1"><h3 class="side-title">User Agent</h3></div>
-
-                    <div class="col-md-11">
-                        <table class="table table-hover table-condensed">
-                            <tbody>
-                            <tr ng-init="ua = address.UserAgent.UserAgent">
-                                <td>UserAgent</td>
-                                <td class="table-data">
-                                    <span ng-switch="ua.Family | firstWord">
-                                        <i ng-switch-when="Chrome" class="fa fa-chrome"></i>
-                                        <i ng-switch-when="IE" class="fa fa-internet-explorer"></i>
-                                        <i ng-switch-when="Edge" class="fa fa-edge"></i>
-                                        <i ng-switch-when="Safari" class="fa fa-safari"></i>
-                                        <i ng-switch-when="Opera" class="fa fa-opera"></i>
-                                    </span>
-                                    {{ua.Family}} {{ua.Major}}.{{ua.Minor}}.{{ua.Patch}}</td>
-                            </tr>
-                            <tr ng-init="os = address.UserAgent.Os">
-                                <td>OS</td>
-                                <td class="table-data">
-                                    <span ng-switch="os.Family | firstWord">
-                                        <i ng-switch-when="Android" class="fa fa-android"></i>
-                                        <i ng-switch-when="Debian" class="fa fa-linux"></i>
-                                        <i ng-switch-when="Linux" class="fa fa-linux"></i>
-                                        <i ng-switch-when="Ubuntu" class="fa fa-linux"></i>
-                                        <i ng-switch-when="Gentoo" class="fa fa-linux"></i>
-                                        <i ng-switch-when="GoogleTV" class="fa fa-television"></i>
-                                        <i ng-switch-when="Firefox" class="fa fa-firebox"></i>
-                                        <i ng-switch-when="Windows" class="fa fa-windows"></i>
-                                        <i ng-switch-when="iOS" class="fa fa-apple"></i>
-                                        <i ng-switch-when="Mac" class="fa fa-apple"></i>
-                                        <i ng-switch-when="Kindle" class="fa tablet"></i>
-                                    </span>
-                                    {{os.Family}} {{os.Major}}.{{os.Minor}}.{{os.Patch}}.{{os.PatchMinor}}</td>
-                            </tr>
-                            <tr ng-init="device = address.UserAgent.Device">
-                                <td>Device</td>
-                                <td class="table-data">{{device.Family}} {{device.Brand}} {{device.Model}}</td>
-                            </tr>
+                                <tr ng-init="ua = address.UserAgent.UserAgent">
+                                    <td class="fw-bold">UserAgent</td>
+                                    <td>
+                                        <span ng-switch="ua.Family | firstWord">
+                                            <i ng-switch-when="Chrome" class="fa-brands fa-chrome text-primary"></i>
+                                            <i ng-switch-when="IE" class="fa-brands fa-internet-explorer text-info"></i>
+                                            <i ng-switch-when="Edge" class="fa-brands fa-edge text-info"></i>
+                                            <i ng-switch-when="Safari" class="fa-brands fa-safari text-primary"></i>
+                                            <i ng-switch-when="Opera" class="fa-brands fa-opera text-danger"></i>
+                                        </span>
+                                        {{ua.Family}} {{ua.Major}}.{{ua.Minor}}.{{ua.Patch}}
+                                    </td>
+                                </tr>
+                                <tr ng-init="os = address.UserAgent.Os">
+                                    <td class="fw-bold">OS</td>
+                                    <td>
+                                        <span ng-switch="os.Family | firstWord">
+                                            <i ng-switch-when="Android" class="fa-brands fa-android text-success"></i>
+                                            <i ng-switch-when="Debian" class="fa-brands fa-linux text-dark"></i>
+                                            <i ng-switch-when="Linux" class="fa-brands fa-linux text-dark"></i>
+                                            <i ng-switch-when="Ubuntu" class="fa-brands fa-linux text-danger"></i>
+                                            <i ng-switch-when="Gentoo" class="fa-brands fa-linux text-info"></i>
+                                            <i ng-switch-when="GoogleTV" class="fa-solid fa-tv text-primary"></i>
+                                            <i ng-switch-when="Firefox" class="fa-brands fa-firefox-browser text-warning"></i>
+                                            <i ng-switch-when="Windows" class="fa-brands fa-windows text-info"></i>
+                                            <i ng-switch-when="iOS" class="fa-brands fa-apple text-dark"></i>
+                                            <i ng-switch-when="Mac" class="fa-brands fa-apple text-dark"></i>
+                                            <i ng-switch-when="Kindle" class="fa-solid fa-tablet-screen-button text-muted"></i>
+                                        </span>
+                                        {{os.Family}} {{os.Major}}.{{os.Minor}}.{{os.Patch}}.{{os.PatchMinor}}
+                                    </td>
+                                </tr>
+                                <tr ng-init="device = address.UserAgent.Device">
+                                    <td class="fw-bold">Device</td>
+                                    <td>{{device.Family}} {{device.Brand}} {{device.Model}}</td>
+                                </tr>
                             </tbody>
                         </table>
                     </div>
                 </div>
 
                 <div class="row" ng-if="address.Location.MapURL">
-                    <div class="col-md-1"><h3 class="side-title">Location</h3></div>
-
-                    <div class="col-md-11">
-                        <p class="text-center"><img ng-src="{{address.Location.MapURL}}" class="text-center"></p>
+                    <div class="col-12 mt-2">
+                        <div class="border-top pt-4">
+                            <h3 class="h6 text-muted mb-3">Location</h3>
+                            <img ng-src="{{address.Location.MapURL}}" class="img-fluid rounded shadow-sm w-100" style="max-height: 400px; object-fit: cover;">
+                        </div>
                     </div>
                 </div>
-
             </div>
-            <div class="panel-footer text-right" ng-if="address.RequestID" uib-collapse="!address.isOpen">Request ID: {{address.RequestID | limitTo:32}}</div>
+            <div class="card-footer text-end text-muted small py-1 px-3" ng-if="address.RequestID">
+                Request ID: <span class="font-monospace">{{address.RequestID | limitTo:32}}</span>
+            </div>
         </div>
 
-        <footer>
-            <p class="pull-left text-left">{{version}} @ {{buildTime}}</p>
-            <p class="pull-right text-right">&copy; <a href="https://bramp.net">bramp.net</a> 2017-2026</p>
+        <footer class="mt-5 pt-4 border-top">
+            <div class="d-flex justify-content-between align-items-center text-muted small">
+                <p class="mb-0">{{version}} @ {{buildTime}}</p>
+                <p class="mb-0">&copy; <a href="https://bramp.net" class="text-decoration-none">bramp.net</a> 2017-2026</p>
+            </div>
         </footer>
     </div>
 
