@@ -12,6 +12,13 @@ APP_YAML = appengine/app.yaml
 GOCLOUD = $(shell command -v gcloud 2> /dev/null)
 PLAYWRIGHT = npx playwright
 
+# Detect OS for portable sed -i
+ifeq ($(shell uname), Darwin)
+	SED_I := sed -i ""
+else
+	SED_I := sed -i
+endif
+
 # Prints out all the GO environment variables. Useful to see the state
 # of what is going on with the GOPATH
 debug-env:
@@ -74,8 +81,8 @@ version: appengine/version.go
 # TODO Move version into the app-engine directory
 appengine/version.go: $(shell git ls-tree -r HEAD --name-only | grep -v /version.go$) .git/index
 	# -ldflags "-X main.BuildTime `date '+%Y-%m-%d %T %Z'` -X main.Version `git describe --long --tags --dirty --always`"
-	sed -i "" "s/\(Version[^\"]*\"\)[^\"]*/\1`git describe --long --tags --dirty --always`/" appengine/version.go
-	sed -i "" "s/\(BuildTime[^\"]*\"\)[^\"]*/\1`date '+%Y-%m-%d %T %Z'`/" appengine/version.go
+	$(SED_I) "s/\(Version[^\"]*\"\)[^\"]*/\1`git describe --long --tags --dirty --always`/" appengine/version.go
+	$(SED_I) "s/\(BuildTime[^\"]*\"\)[^\"]*/\1`date '+%Y-%m-%d %T %Z'`/" appengine/version.go
 
 serve: version deps
 	go run bramp.net/myip/appengine
