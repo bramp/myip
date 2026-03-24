@@ -61,7 +61,7 @@ func TestGoogleMapURLBuilder(t *testing.T) {
 				Lat:  1.23,
 				Long: 4.56,
 			},
-			want: "https://maps.googleapis.com/maps/api/staticmap?size=640x400&markers=color:red%7C1.230000,4.560000&key=1234&signature=gQ7ZbZzYOHuwsVjdsUNY30EoDCE=",
+			want: "https://maps.googleapis.com/maps/api/staticmap?size=640x400&scale=2&markers=color:red%7C1.230000,4.560000&key=1234&signature=X9VwdhnCryvwiGcFtKgBcS1M0mk=",
 		},
 	}
 

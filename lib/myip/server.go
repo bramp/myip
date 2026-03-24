@@ -56,13 +56,31 @@ func URLHeaders(h http.Handler) http.Handler {
 	return http.HandlerFunc(fn)
 }
 
+// DebugHeaders is a middleware that adds some debug headers if they are missing.
+func DebugHeaders(config *conf.Config) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if config.Debug && config.LatLongHeader != "" && r.Header.Get(config.LatLongHeader) == "" {
+				// Default to San Francisco
+				r.Header.Set(config.LatLongHeader, "37.7749,-122.4194")
+			}
+			next.ServeHTTP(w, r)
+		})
+	}
+}
+
 // Register this myip.Server. Should only be called once.
 func Register(r *mux.Router, config *conf.Config) { // TODO Refactor so we don't need config here
 	app := &DefaultServer{
 		Config: config,
 	}
 
-	// Documented here: https://godoc.org/github.com/unrolled/secure#Options
+	// TODO Find CSP generator to make the next line shorter, and less error prone
+	csp := "default-src 'self';" +
+		" connect-src *;" +
+		" script-src 'self' www.google-analytics.com www.googletagmanager.com;" +
+		" img-src data: 'self' www.google-analytics.com www.googletagmanager.com maps.googleapis.com;"
+
 	secureConfig := secure.Options{
 		IsDevelopment: config.Debug,
 
@@ -78,14 +96,11 @@ func Register(r *mux.Router, config *conf.Config) { // TODO Refactor so we don't
 		ContentTypeNosniff: true, // Trust the Content-Type and don't second guess them.
 		BrowserXssFilter:   true,
 
-		// TODO Find CSP generator to make the next line shorter, and less error prone
-		ContentSecurityPolicy: "default-src 'self';" +
-			" connect-src *;" +
-			" script-src 'self' www.google-analytics.com www.googletagmanager.com;" +
-			" img-src data: 'self' www.google-analytics.com www.googletagmanager.com maps.googleapis.com;",
+		ContentSecurityPolicy: csp,
 	}
 
 	r.Use(URLHeaders)
+	r.Use(DebugHeaders(config))
 	r.Use(secure.New(secureConfig).Handler)
 
 	// Fetching with `curl`

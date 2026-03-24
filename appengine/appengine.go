@@ -42,6 +42,8 @@ var debugConfig = &conf.Config{
 
 	MapsAPIKey: "AIzaSyA6-HIkxuJEX6Hf3rzVx07no32YM3N5V9s",
 
+	LatLongHeader: "X-Test-Latlong",
+
 	DisallowedHeaders: []string{"none"},
 }
 
@@ -142,10 +144,10 @@ func config() *conf.Config {
 		if err != nil {
 			log.Fatalf("Failed to ApplyDefaults: %s", err)
 		}
-
-		// Load the MapsAPISigningKey secret key
-		loadSecrets(config)
 	}
+
+	// Load the MapsAPISigningKey secret key (from environment or secret manager)
+	loadSecrets(config)
 
 	config.Version = Version
 	config.BuildTime = BuildTime
@@ -155,6 +157,25 @@ func config() *conf.Config {
 
 // Some keys are stored in GCP Secret Manager.
 func loadSecrets(config *conf.Config) {
+	// First check if it's already in the environment (common for local dev)
+	if envKey := os.Getenv("MAPS_API_SIGNING_KEY"); envKey != "" {
+		key, err := base64.URLEncoding.DecodeString(envKey)
+		if err == nil {
+			config.MapsAPISigningKey = key
+			return
+		}
+		log.Errorf("failed to decode MAPS_API_SIGNING_KEY from env: %v", err)
+	}
+
+	// GCP project in which to store secrets in Secret Manager.
+	projectID := os.Getenv("GOOGLE_CLOUD_PROJECT")
+	if projectID == "" {
+		if config.Debug {
+			log.Debug("GOOGLE_CLOUD_PROJECT not set, skipping Secret Manager")
+		}
+		return
+	}
+
 	ctx := context.Background()
 	client, err := secretmanager.NewClient(ctx)
 	if err != nil {
@@ -163,8 +184,6 @@ func loadSecrets(config *conf.Config) {
 	}
 	defer client.Close()
 
-	// GCP project in which to store secrets in Secret Manager.
-	projectID := os.Getenv("GOOGLE_CLOUD_PROJECT")
 	keyBytes, err := accessSecret(ctx, client, projectID, "map_static_signing")
 	if err != nil {
 		log.Errorf("failed to access secret: %v", err)

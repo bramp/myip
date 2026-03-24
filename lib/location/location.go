@@ -84,6 +84,7 @@ func (b *googleMapURLBuilder) build(r *Response) string {
 func (b *googleMapURLBuilder) baseURL(r *Response) string {
 	base := "/maps/api/staticmap"
 	base += "?size=640x400"
+	base += "&scale=2"
 	base += "&markers=color:red%7C" // markerStyles %7C location
 
 	if r.Lat != 0 && r.Long != 0 {
@@ -135,7 +136,21 @@ func Handle(config *conf.Config, req *http.Request) *Response {
 		}
 
 		response.MapURL = b.build(response)
+
+		if response.MapURL != "" && config.Debug && len(config.MapsAPISigningKey) == 0 {
+			fmt.Println("Warning: MapsAPISigningKey is missing. Google Maps may return a signature error.")
+			fmt.Println("To fix, set the MAPS_API_SIGNING_KEY environment variable.")
+			// Fallback to placeholder to ensure something is visible in UI tests
+			response.MapURL = placeholderMapURL()
+		}
 	}
 
 	return response
+}
+
+// placeholderMapURL returns a purely local base64-encoded SVG placeholder map.
+// This is used for local development to avoid CSP and network issues.
+func placeholderMapURL() string {
+	// A simple gray box with "Map Placeholder" text as a base64-encoded SVG.
+	return "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NDAiIGhlaWdodD0iNDAwIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZWVlIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyNCIgZmlsbD0iIzY2NiIgdGV4dC1hbmNob3I9Im1pZGRsZSI+TWFwIFBsYWNlaG9sZGVyPC90ZXh0Pjwvc3ZnPg=="
 }

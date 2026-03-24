@@ -59,10 +59,12 @@ type Config struct {
 
 	// MapsAPIKey is used to render static Google Maps.
 	// Request your own at https://developers.google.com/maps/documentation/static-maps/
+	// To secure your key, you must also configure MapsAPISigningKey.
 	MapsAPIKey string `json:",omitempty"`
 
 	// MapsAPISigningKey is a secret key that allows you to sign the map URL request
 	// to prove we are the owning of the static map api key.
+	// This can be configured via an environment variable (MAPS_API_SIGNING_KEY), or stored in a secret manager (e.g. Google Secret Manager).
 	MapsAPISigningKey []byte `json:",omitempty"`
 }
 
