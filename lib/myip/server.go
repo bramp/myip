@@ -81,8 +81,8 @@ func Register(r *mux.Router, config *conf.Config) { // TODO Refactor so we don't
 		// TODO Find CSP generator to make the next line shorter, and less error prone
 		ContentSecurityPolicy: "default-src 'self';" +
 			" connect-src *;" +
-			" script-src 'self' www.google-analytics.com;" +
-			" img-src data: 'self' www.google-analytics.com maps.googleapis.com;",
+			" script-src 'self' www.google-analytics.com www.googletagmanager.com;" +
+			" img-src data: 'self' www.google-analytics.com www.googletagmanager.com maps.googleapis.com;",
 	}
 
 	r.Use(URLHeaders)
