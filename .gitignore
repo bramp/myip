@@ -1,6 +1,8 @@
 node_modules
 static/bower_components
 .cache
+playwright-report/
+test-results/
 
 # This checked in file, was marked as no longer changed with:
 # `git update-index --assume-unchanged appengine/version.go`

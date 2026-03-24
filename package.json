@@ -5,7 +5,9 @@
   "repository": "https://github.com/bramp/myip",
   "license": "Apache-2.0",
   "devDependencies": {
-    "npm-check-updates": "19.6.5"
+    "@playwright/test": "^1.58.2",
+    "npm-check-updates": "19.6.5",
+    "playwright": "^1.58.2"
   },
   "dependencies": {
     "@bower_components/angular": "angular/bower-angular#v1.8.3",
