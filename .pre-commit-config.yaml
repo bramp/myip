@@ -7,13 +7,32 @@ repos:
     - id: check-yaml
     - id: check-added-large-files
 
-- repo: https://github.com/dnephin/pre-commit-golang
-  rev: v0.5.1
+- repo: local
   hooks:
-    - id: go-fmt
-    - id: go-vet
-    - id: go-imports
-    - id: go-cyclo
-      args: [-over, "25"]
-    - id: go-lint
-    - id: go-unit-tests
+    - id: make-fmt
+      name: make fmt
+      entry: make fmt
+      language: system
+      files: \.go$
+      pass_filenames: false
+
+    - id: make-vet
+      name: make vet
+      entry: make vet
+      language: system
+      files: \.go$
+      pass_filenames: false
+
+    - id: make-lint
+      name: make lint
+      entry: make lint
+      language: system
+      files: \.go$
+      pass_filenames: false
+
+    - id: make-test
+      name: make test
+      entry: make test
+      language: system
+      files: \.go$
+      pass_filenames: false

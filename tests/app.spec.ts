@@ -56,7 +56,7 @@ test.describe('What\'s My IP App', () => {
     const card = page.locator('.card').first();
     await expect(card).toBeVisible();
     await expect(card.locator('.card-header')).toBeVisible();
-    
+
     // Expand to see body
     await card.locator('button.btn-outline-light').click();
     await expect(card.locator('.card-body')).toHaveClass(/show/);
@@ -120,12 +120,12 @@ test.describe('What\'s My IP App', () => {
     });
 
     await page.goto('/');
-    
+
     // Find the IPv6 card (usually the second one)
     const ipv6Card = page.locator('.card', { hasText: 'IPv6' });
     await expect(ipv6Card).toBeVisible();
     await expect(ipv6Card).toContainText('error: unknown error');
-    
+
     // The button should NOT be visible
     const button = ipv6Card.locator('button.btn-outline-light');
     await expect(button).not.toBeVisible();
@@ -155,7 +155,7 @@ test.describe('What\'s My IP App', () => {
     await page.goto('/');
     const card = page.locator('.card').first();
     await card.locator('button.btn-outline-light').click();
-    
+
     // The "Actual Remote Addr" row should NOT be present (since it's just a port difference in our mock)
     await expect(card.locator('tr', { hasText: 'Actual Remote Addr' })).not.toBeVisible();
   });
@@ -180,7 +180,7 @@ test.describe('What\'s My IP App', () => {
     await page.goto('/');
     const card = page.locator('.card').first();
     await card.locator('button.btn-outline-light').click();
-    
+
     // The error alert should NOT be visible
     await expect(card.locator('.alert-danger', { hasText: 'some error' })).not.toBeVisible();
     // The body should be visible
@@ -191,7 +191,7 @@ test.describe('What\'s My IP App', () => {
     await page.goto('/');
     const card = page.locator('.card').first();
     await card.locator('button.btn-outline-light').click();
-    
+
     const map = card.locator('img.img-fluid');
     await expect(map).toBeVisible();
     // Expect either a real maps URL or our base64 placeholder
