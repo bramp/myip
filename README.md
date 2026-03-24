@@ -71,6 +71,22 @@ To start up a local instance, just execute:
 make serve
 ```
 
+When running locally, the server runs in debug mode. Since your local IP address (e.g `127.0.0.1`)
+won't return useful RDAP or WHOIS results, you can override the IP address by passing a `host`
+query parameter:
+
+```
+http://localhost:8080/?host=8.8.8.8
+```
+
+This also works with the JSON API:
+
+```
+http://localhost:8080/json?host=8.8.8.8
+```
+
+> **Note:** The `host` parameter is only available in debug mode and is disabled in production.
+
 To test:
 
 ```shell

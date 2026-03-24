@@ -13,8 +13,14 @@ var cliTmpl = template.Must(template.New("test").Parse(
 		"{{range .RemoteAddrReverse.Names}}" +
 		"DNS: {{.}}\n" +
 		"{{end}}\n" +
+		"{{if .RemoteAddrRDAP}}" +
+		"RDAP:\n" +
+		"{{.RemoteAddrRDAP.Body}}\n\n" +
+		"{{end}}" +
+		"{{if .RemoteAddrWhois}}" +
 		"WHOIS:\n" +
 		"{{.RemoteAddrWhois.Body}}\n\n" +
+		"{{end}}" +
 		"Location: " +
 		"{{.Location.City}} {{.Location.Region}} {{.Location.Country}}" +
 		"{{if (and (ne .Location.Lat 0.0) (ne .Location.Long 0.0))}} ({{.Location.Lat}}, {{.Location.Long}}) {{end}}\n\n" +

@@ -25,6 +25,7 @@ import (
 
 	"bramp.net/myip/lib/dns"
 	"bramp.net/myip/lib/location"
+	"bramp.net/myip/lib/rdap"
 	"bramp.net/myip/lib/ua"
 	"bramp.net/myip/lib/whois"
 )
@@ -36,6 +37,7 @@ type Response struct {
 	RemoteAddr        string
 	RemoteAddrFamily  string
 	RemoteAddrReverse *dns.Response   `json:",omitempty"`
+	RemoteAddrRDAP    *rdap.Response  `json:",omitempty"`
 	RemoteAddrWhois   *whois.Response `json:",omitempty"`
 
 	ActualRemoteAddr string `json:",omitempty"` // The actual one we observed
@@ -69,6 +71,7 @@ func (s *DefaultServer) MyIPHandler(req *http.Request) (*Response, error) {
 	}
 
 	var dnsResp *dns.Response
+	var rdapResp *rdap.Response
 	var whoisResp *whois.Response
 	var locationResponse *location.Response
 	var userAgentClient *uaparser.Client // TODO change this to be a ua.Response
@@ -81,6 +84,9 @@ func (s *DefaultServer) MyIPHandler(req *http.Request) (*Response, error) {
 		}
 
 		if req.URL.Query().Get("whois") != "false" {
+			addToWg(wg, func() {
+				rdapResp = rdap.Handle(ctx, host)
+			})
 			addToWg(wg, func() {
 				whoisResp = whois.Handle(ctx, host)
 			})
@@ -115,6 +121,7 @@ func (s *DefaultServer) MyIPHandler(req *http.Request) (*Response, error) {
 		RemoteAddr:        host,
 		RemoteAddrFamily:  family,
 		RemoteAddrReverse: dnsResp,
+		RemoteAddrRDAP:    rdapResp,
 		RemoteAddrWhois:   whoisResp,
 
 		ActualRemoteAddr: req.RemoteAddr,

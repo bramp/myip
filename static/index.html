@@ -102,6 +102,15 @@
                 </div>
 
                 <div class="row">
+                    <div class="col-md-1"><h3 class="side-title">RDAP</h3></div>
+
+                    <div class="col-md-11">
+                        <div ng-if="address.RemoteAddrRDAP.Error" class="alert alert-danger">{{address.RemoteAddrRDAP.Error}}</div>
+                        <pre ng-if="address.RemoteAddrRDAP.Body">{{address.RemoteAddrRDAP.Body}}</pre>
+                    </div>
+                </div>
+
+                <div class="row" ng-if="address.RemoteAddrWhois">
                     <div class="col-md-1"><h3 class="side-title">Whois</h3></div>
 
                     <div class="col-md-11">
