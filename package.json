@@ -5,17 +5,14 @@
   "repository": "https://github.com/bramp/myip",
   "license": "Apache-2.0",
   "devDependencies": {
-    "@playwright/test": "^1.58.2",
-    "npm-check-updates": "19.6.5",
-    "playwright": "^1.58.2"
+    "npm-check-updates": "19.6.5"
   },
   "dependencies": {
-    "@bower_components/angular": "^1.8.3",
-    "@bower_components/angular-bootstrap": "^2.5.0",
-    "@bower_components/bootstrap": "^5.3.8",
-    "@bower_components/components-font-awesome": "^6.5.2"
+    "@bower_components/angular": "angular/bower-angular#1.6.x",
+    "@bower_components/angular-bootstrap": "angular-ui/bootstrap-bower#2.5.x",
+    "@bower_components/bootstrap": "twbs/bootstrap#3.3.x",
+    "@bower_components/components-font-awesome": "components/font-awesome#4.7.x"
   },
-
   "engines": {
     "yarn": ">= 1.0.0"
   },
