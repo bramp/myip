@@ -1,17 +1,16 @@
-.PHONY: all analyze upgrade fix test-ci default check-update debug-env check imports fmt vet lint clean veryclean test deps serve deploy stage version gocloud
+.PHONY: all analyze upgrade fix test-ci default check-update debug-env check imports fmt vet lint clean veryclean test deps test-ui serve deploy stage version gocloud
 
 default: all
 
-all: format analyze test
+all: format analyze test test-ui
 
-#get the path to this Makefile, its the last in this list
-#MAKEFILE_LIST is the list of Makefiles that are executed.
+# get the path to this Makefile
 TOP := $(dir $(lastword $(MAKEFILE_LIST)))
 ROOT = $(realpath $(TOP))
 
 APP_YAML = appengine/app.yaml
-NODE_MODULES = $(ROOT)/node_modules/.bin
 GOCLOUD = $(shell command -v gcloud 2> /dev/null)
+PLAYWRIGHT = npx playwright
 
 # Prints out all the GO environment variables. Useful to see the state
 # of what is going on with the GOPATH
@@ -29,7 +28,7 @@ static/bower_components: yarn.lock
 	yarn install
 
 check-updates:
-	$(NODE_MODULES)/ncu
+	yarn ncu
 	go mod tidy
 	go get -u all
 
@@ -56,7 +55,10 @@ lint:
 test: check
 	go test ./...
 
-test-ci: test
+test-ui: deps
+	$(PLAYWRIGHT) test
+
+test-ci: test test-ui
 
 fix:
 	go fmt ./...
@@ -75,7 +77,7 @@ appengine/version.go: $(shell git ls-tree -r HEAD --name-only | grep -v /version
 	sed -i "" "s/\(Version[^\"]*\"\)[^\"]*/\1`git describe --long --tags --dirty --always`/" appengine/version.go
 	sed -i "" "s/\(BuildTime[^\"]*\"\)[^\"]*/\1`date '+%Y-%m-%d %T %Z'`/" appengine/version.go
 
-serve: version
+serve: version deps
 	go run bramp.net/myip/appengine
 
 gcloud:
