@@ -6,9 +6,10 @@
   version "2.5.0"
   resolved "https://codeload.github.com/angular-ui/bootstrap-bower/tar.gz/752d6a79f500391a7efb06d80f37405c920a6f2b"
 
-"@bower_components/angular@angular/bower-angular#1.6.x":
-  version "1.6.10"
-  resolved "https://codeload.github.com/angular/bower-angular/tar.gz/309e7f82ecc9098e1f93870eb33083b84dead289"
+"@bower_components/angular@angular/bower-angular#v1.8.3":
+  version "1.8.3"
+  uid "142f3c4bc7d43b6de39581a0d886bbf97f8b62ef"
+  resolved "https://codeload.github.com/angular/bower-angular/tar.gz/142f3c4bc7d43b6de39581a0d886bbf97f8b62ef"
 
 "@bower_components/bootstrap@twbs/bootstrap#v5.3.8":
   version "5.3.8"
