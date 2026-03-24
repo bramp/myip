@@ -14,9 +14,10 @@
   version "3.3.7"
   resolved "https://codeload.github.com/twbs/bootstrap/tar.gz/0b9c4a4007c44201dce9a6cc1a38407005c26c86"
 
-"@bower_components/components-font-awesome@components/font-awesome#4.7.x":
-  version "4.7.0"
-  resolved "https://codeload.github.com/components/font-awesome/tar.gz/885308b939369d147bec93174722786bc2c4eedd"
+"@bower_components/components-font-awesome@components/font-awesome#6.5.2":
+  version "6.5.2"
+  uid "399200378d29bacb524c0e19318ea5ff5d74aa7f"
+  resolved "https://codeload.github.com/components/font-awesome/tar.gz/399200378d29bacb524c0e19318ea5ff5d74aa7f"
 
 npm-check-updates@19.6.5:
   version "19.6.5"
