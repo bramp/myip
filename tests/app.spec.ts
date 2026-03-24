@@ -198,6 +198,19 @@ test.describe('What\'s My IP App', () => {
     await expect(map).toHaveAttribute('src', /(maps\.googleapis\.com|^data:image\/svg\+xml;base64)/);
   });
 
+  test('should show improved error message for failed IPv6 connection', async ({ page }) => {
+    // Abort the IPv6 request to simulate a network failure (Angular status -1)
+    await page.route(url => url.pathname.endsWith('/json') && url.searchParams.get('family') === 'IPv6', async route => {
+      await route.abort('failed');
+    });
+
+    await page.goto('/');
+
+    const ipv6Card = page.locator('.card', { hasText: 'IPv6' });
+    await expect(ipv6Card).toBeVisible();
+    await expect(ipv6Card).toContainText('Unknown Error - This means you either do not have a IPv6 address, or something else went wrong');
+  });
+
   test('should have a working /json endpoint (integration)', async ({ request }) => {
     // This tests the real backend (not mocked via page.route)
     const response = await request.get('/json');

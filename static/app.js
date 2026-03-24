@@ -39,10 +39,18 @@ myipApp.controller('MyIPController', function MyIPController($scope, $http, $loc
             $scope.addresses.push(response.data);
 
         }, function error(response) {
-            errorText = response["statusText"] || "unknown error";
+            var errorText = response["statusText"] || "unknown error";
+            var status = response["status"];
+
+            if (status === -1) {
+                errorText = "Unknown Error - This means you either do not have a " + family + " address, or something else went wrong";
+            } else {
+                errorText = status + ": " + errorText;
+            }
+
             $scope.addresses.push({
                 "RemoteAddrFamily": family,
-                "Error": response["status"] + ": " + errorText
+                "Error": errorText
             });
         });
     });
