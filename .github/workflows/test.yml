@@ -20,7 +20,7 @@ jobs:
       - name: Install staticcheck
         run: go install honnef.co/go/tools/cmd/staticcheck@latest
 
-      - name: Install dependencies
+      - name: Install Go dependencies
         run: go mod download
 
       - name: Set up Node.js
@@ -28,6 +28,9 @@ jobs:
         with:
           node-version: '20'
           cache: 'yarn'
+
+      - name: Install Node.js dependencies
+        run: yarn install
 
       - name: Install Playwright Browsers
         run: npx playwright install chromium --with-deps
