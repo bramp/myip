@@ -92,7 +92,7 @@
                             <tbody>
                             <tr ng-repeat="(header, values) in address.Header">
                                 <td>{{header}}</td>
-                                <td>
+                                <td class="table-data">
                                     <span ng-repeat="value in values">{{value}}<span ng-if="!$last">, </span></span>
                                 </td>
                             </tr>
@@ -118,7 +118,7 @@
                             <tbody>
                             <tr ng-init="ua = address.UserAgent.UserAgent">
                                 <td>UserAgent</td>
-                                <td>
+                                <td class="table-data">
                                     <span ng-switch="ua.Family | firstWord">
                                         <i ng-switch-when="Chrome" class="fa fa-chrome"></i>
                                         <i ng-switch-when="IE" class="fa fa-internet-explorer"></i>
@@ -130,7 +130,7 @@
                             </tr>
                             <tr ng-init="os = address.UserAgent.Os">
                                 <td>OS</td>
-                                <td>
+                                <td class="table-data">
                                     <span ng-switch="os.Family | firstWord">
                                         <i ng-switch-when="Android" class="fa fa-android"></i>
                                         <i ng-switch-when="Debian" class="fa fa-linux"></i>
@@ -148,7 +148,7 @@
                             </tr>
                             <tr ng-init="device = address.UserAgent.Device">
                                 <td>Device</td>
-                                <td>{{device.Family}} {{device.Brand}} {{device.Model}}</td>
+                                <td class="table-data">{{device.Family}} {{device.Brand}} {{device.Model}}</td>
                             </tr>
                             </tbody>
                         </table>
@@ -169,7 +169,7 @@
 
         <footer>
             <p class="pull-left text-left">{{version}} @ {{buildTime}}</p>
-            <p class="pull-right text-right">&copy; <a href="https://bramp.net">bramp.net</a> 2017,2020</p>
+            <p class="pull-right text-right">&copy; <a href="https://bramp.net">bramp.net</a> 2017-2026</p>
         </footer>
     </div>
 
