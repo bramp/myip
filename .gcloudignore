@@ -10,44 +10,14 @@ node_modules
 .cache
 .idea
 
-# Ignore everything in bower_components except what we actually need
-static/bower_components/**/README*
-static/bower_components/**/LICENSE*
-static/bower_components/**/package.json
-static/bower_components/**/bower.json
-static/bower_components/**/composer.json
-static/bower_components/**/component.json
-static/bower_components/**/*.md
-static/bower_components/**/*.txt
-static/bower_components/**/*.map
-static/bower_components/**/*.gzip
-static/bower_components/**/*.js
-static/bower_components/**/*.less
-static/bower_components/**/*.scss
+# Ignore everything in bower_components by default
+static/bower_components/**
 
-# Re-allow only the minified files and actual dependencies used in static/index.html
+# Re-allow only the specific files used in static/index.html
 !static/bower_components/bootstrap/dist/css/bootstrap.css
+!static/bower_components/bootstrap/dist/js/bootstrap.bundle.min.js
+!static/bower_components/bootstrap/dist/fonts/*
 !static/bower_components/angular/angular.min.js
 !static/bower_components/angular/angular-csp.css
-!static/bower_components/angular-bootstrap/ui-bootstrap.min.js
-!static/bower_components/angular-bootstrap/ui-bootstrap-csp.css
-!static/bower_components/components-font-awesome/css/font-awesome.min.css
-!static/bower_components/components-font-awesome/fonts/*
-
-# Keep fonts since they are often needed by the CSS
-!static/bower_components/bootstrap/dist/fonts/*
-
-# General ignores
-static/bower_components/bootstrap/grunt
-static/bower_components/bootstrap/less
-static/bower_components/bootstrap/nuget
-static/bower_components/bootstrap/docs
-static/bower_components/bootstrap/js
-static/bower_components/bootstrap/grunt
-static/bower_components/bootstrap/Gruntfile.js
-static/bower_components/bootstrap/package.js
-static/bower_components/bootstrap/_config.yml
-static/bower_components/bootstrap/Gemfile*
-static/bower_components/components-font-awesome/less
-static/bower_components/components-font-awesome/scss
-static/bower_components/components-font-awesome/Makefile
+!static/bower_components/components-font-awesome/css/all.min.css
+!static/bower_components/components-font-awesome/webfonts/*
