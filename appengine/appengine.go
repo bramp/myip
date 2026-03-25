@@ -67,6 +67,8 @@ var appengineDefaultConfig = &conf.Config{
 	CityHeader:      "X-Appengine-City",
 
 	DisallowedHeaders: []string{
+		"X-Appengine-Appversionid",
+		"X-Appengine-Api-Ticket",
 		"X-Appengine-Default-Namespace",
 		"X-Appengine-Request-Id-Hash",
 		"X-Appengine-Request-Log-Id",
