@@ -3,7 +3,7 @@ name: Deploy to App Engine
 on:
   push:
     tags:
-      - 'v[0-9]+.[0-9]+.[0-9]+*'
+      - 'v[0-9]+**'
 
 jobs:
   test:
@@ -36,12 +36,7 @@ jobs:
         run: yarn install
 
       - name: Update Version in code
-        run: |
-          VERSION=$(git describe --long --tags --dirty --always)
-          BUILD_TIME=$(date '+%Y-%m-%d %T %Z')
-          # On Linux sed -i does not need the empty string extension
-          sed -i "s/\(Version[^\"]*\"\)[^\"]*/\1$VERSION/" appengine/version.go
-          sed -i "s/\(BuildTime[^\"]*\"\)[^\"]*/\1$BUILD_TIME/" appengine/version.go
+        run: make version
 
       - name: 'Check secrets'
         env:

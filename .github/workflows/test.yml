@@ -10,6 +10,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
 
       - name: Set up Go
         uses: actions/setup-go@v6
@@ -35,11 +37,8 @@ jobs:
       - name: Install Playwright Browsers
         run: npx playwright install chromium --with-deps
 
-      - name: Format
-        run: make format
+      - name: Update Version in code
+        run: make version
 
-      - name: Analyze
-        run: make analyze
-
-      - name: Run tests
+      - name: Run CI checks
         run: make test-ci
