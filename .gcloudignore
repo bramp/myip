@@ -1,23 +1,60 @@
-# Files in here do not get uploaded to AppEngine
-# To see what does, run:
-#   gcloud app deploy --project myip-158305 --appyaml appengine/app.yaml --no-promote --verbosity=debug
+# 1. Deny everything at root
+/*
 
-node_modules
+# 2. Allow essential root files
+!/go.mod
+!/go.sum
 
-# Ignore the git directory!
-.git
-.gitignore
-.cache
-.idea
+# 3. Allow top-level directories (but their contents remain ignored by default)
+!/appengine/
+!/lib/
+!/static/
 
-# Ignore everything in bower_components by default
-static/bower_components/**
+# 4. Handle appengine/ contents
+/appengine/*
+!/appengine/*.go
+!/appengine/*.yaml
 
-# Re-allow only the specific files used in static/index.html
-!static/bower_components/bootstrap/dist/css/bootstrap.css
-!static/bower_components/bootstrap/dist/js/bootstrap.bundle.min.js
-!static/bower_components/bootstrap/dist/fonts/*
-!static/bower_components/angular/angular.min.js
-!static/bower_components/angular/angular-csp.css
-!static/bower_components/components-font-awesome/css/all.min.css
-!static/bower_components/components-font-awesome/webfonts/*
+# 5. Handle lib/ contents (un-ignore parent directories to allow recursion)
+!/lib/**
+/lib/**/*_test.go
+/lib/**/testdata/
+
+# 6. Handle static/ root contents
+/static/*
+!/static/*.html
+!/static/*.js
+!/static/*.css
+!/static/*.txt
+
+# 7. Handle bower_components (Path-by-path un-ignoring)
+# We must allow the directory itself, then ignore its contents, then allow sub-paths.
+!/static/bower_components/
+/static/bower_components/*
+
+# --- Angular ---
+!/static/bower_components/angular/
+/static/bower_components/angular/*
+!/static/bower_components/angular/angular.min.js
+!/static/bower_components/angular/angular-csp.css
+
+# --- Bootstrap ---
+!/static/bower_components/bootstrap/
+/static/bower_components/bootstrap/*
+!/static/bower_components/bootstrap/dist/
+/static/bower_components/bootstrap/dist/*
+!/static/bower_components/bootstrap/dist/css/
+/static/bower_components/bootstrap/dist/css/*
+!/static/bower_components/bootstrap/dist/css/bootstrap.css
+!/static/bower_components/bootstrap/dist/js/
+/static/bower_components/bootstrap/dist/js/*
+!/static/bower_components/bootstrap/dist/js/bootstrap.bundle.min.js
+
+# --- Font Awesome ---
+!/static/bower_components/components-font-awesome/
+/static/bower_components/components-font-awesome/*
+!/static/bower_components/components-font-awesome/css/
+/static/bower_components/components-font-awesome/css/*
+!/static/bower_components/components-font-awesome/css/all.min.css
+!/static/bower_components/components-font-awesome/webfonts/
+!/static/bower_components/components-font-awesome/webfonts/*

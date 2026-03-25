@@ -52,12 +52,24 @@ ip6.bramp.net.		300	IN	AAAA	2001:4860:4802:32::15
 
 All three domain names should be configured in main.go (find the prodConfig var).
 
-To deploy:
+## Deployment
+
+Deployment to Google App Engine is carried out by a [Github Action](.github/workflows/deploy.yml) - but to do it manually.
 
 ```shell
-make deploy # to prod
-make stage  # to stage
+make stage  # Deploys to a new version but does NOT promote it (useful for testing)
 ```
+
+This will show you which files will be included, and allow a staged version to become available. You can view the [various staged versions](https://console.cloud.google.com/appengine/versions) on the cloud console.
+
+If you see unexpected files in the list, update `.gcloudignore` accordingly.
+
+Once ready use:
+
+```shell
+make deploy # Deploys to production and promotes the version
+```
+
 
 ## Development
 

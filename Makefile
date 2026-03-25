@@ -92,12 +92,16 @@ ifndef GOCLOUD
 	$(error "gcloud is not available. Please install the Google Cloud SDK https://cloud.google.com/sdk/docs")
 endif
 
-deploy: gcloud version check
-	gcloud app deploy --project myip-158305 --appyaml $(APP_YAML)
-
 # Install but don't promote to the serving version
 stage: gcloud version check
-	gcloud app deploy --project myip-158305 --appyaml $(APP_YAML) --no-promote
+	echo "The following files will be uploaded to the staging environment:"
+	gcloud meta list-files-for-upload
+
+	echo "Now deploying to staging environment. This will not promote to the serving version, but will upload and install the new version. You can then test this version before promoting it to production."
+	gcloud app deploy --project myip-158305 --appyaml $(APP_YAML) --no-promote --verbosity=info
+
+deploy: gcloud version check
+	gcloud app deploy --project myip-158305 --appyaml $(APP_YAML)
 
 clean:
 	rm -rf static/bower_components

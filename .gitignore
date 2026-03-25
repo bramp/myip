@@ -1,6 +1,7 @@
 node_modules
 static/bower_components
 .cache
+.vscode/
 playwright-report/
 test-results/
 
