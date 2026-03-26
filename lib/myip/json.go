@@ -29,14 +29,12 @@ func (s *DefaultServer) JSONHandler(w http.ResponseWriter, req *http.Request) {
 func (s *DefaultServer) writeJSON(w http.ResponseWriter, req *http.Request, obj interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 
-	scheme := "http://"
-	if req.URL.Scheme == "https" {
-		scheme = "https://"
+	if origin := req.Header.Get("Origin"); origin != "" {
+		if s.Config.MatchOrigin(origin) {
+			w.Header().Set("Access-Control-Allow-Origin", origin)
+			w.Header().Set("Vary", "Origin")
+		}
 	}
-
-	// TODO Consider setting this on all responses
-	w.Header().Set("Access-Control-Allow-Origin", scheme+s.Config.Host)
-	w.Header().Set("Vary", "Origin")
 
 	// TODO Do something with the returned err
 	json.NewEncoder(w).Encode(obj)

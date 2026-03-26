@@ -54,6 +54,10 @@ var prodConfig = &conf.Config{
 	Host4: "ip4.bramp.net",
 	Host6: "ip6.bramp.net",
 
+	AllowedOrigins: []string{
+		"*-dot-myip-158305.uc.r.appspot.com",
+	},
+
 	MapsAPIKey: "AIzaSyA6-HIkxuJEX6Hf3rzVx07no32YM3N5V9s",
 
 	// If behind CloudFlare use the following:
@@ -159,16 +163,6 @@ func config() *conf.Config {
 
 // Some keys are stored in GCP Secret Manager.
 func loadSecrets(config *conf.Config) {
-	// First check if it's already in the environment (common for local dev)
-	if envKey := os.Getenv("MAPS_API_SIGNING_KEY"); envKey != "" {
-		key, err := base64.URLEncoding.DecodeString(envKey)
-		if err == nil {
-			config.MapsAPISigningKey = key
-			return
-		}
-		log.Errorf("failed to decode MAPS_API_SIGNING_KEY from env: %v", err)
-	}
-
 	// GCP project in which to store secrets in Secret Manager.
 	projectID := os.Getenv("GOOGLE_CLOUD_PROJECT")
 	if projectID == "" {
@@ -186,6 +180,7 @@ func loadSecrets(config *conf.Config) {
 	}
 	defer client.Close()
 
+	// Load the MapsAPISigningKey secret key
 	keyBytes, err := accessSecret(ctx, client, projectID, "map_static_signing")
 	if err != nil {
 		log.Errorf("failed to access secret: %v", err)

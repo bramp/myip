@@ -14,7 +14,11 @@
 
 package conf
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"net/url"
+	"path"
+)
 
 // Config contains all the configuration options for this application.
 // TODO Turn this into a config file that gets parsed onstartup
@@ -28,6 +32,10 @@ type Config struct {
 	Host  string `json:",omitempty"`
 	Host4 string `json:",omitempty"`
 	Host6 string `json:",omitempty"`
+
+	// AllowedOrigins is a list of additional origins allowed via CORS.
+	// Supports * as a wildcard.
+	AllowedOrigins []string `json:",omitempty"`
 
 	// Debug enables unsafe options for debugging
 	Debug bool `json:",omitempty"`
@@ -66,6 +74,34 @@ type Config struct {
 	// to prove we are the owning of the static map api key.
 	// This can be configured via an environment variable (MAPS_API_SIGNING_KEY), or stored in a secret manager (e.g. Google Secret Manager).
 	MapsAPISigningKey []byte `json:",omitempty"`
+}
+
+// MatchOrigin returns true if the given origin matches the allowed hosts or origins.
+func (c *Config) MatchOrigin(origin string) bool {
+	u, err := url.Parse(origin)
+	if err != nil {
+		return false
+	}
+
+	hostname := u.Hostname()
+
+	// Check main hosts
+	if hostname == c.Host || hostname == c.Host4 || hostname == c.Host6 {
+		return true
+	}
+
+	// Check AllowedOrigins (with wildcard support)
+	for _, allowed := range c.AllowedOrigins {
+		if match, _ := path.Match(allowed, hostname); match {
+			return true
+		}
+		// Also support full origin match (e.g. https://*.example.com)
+		if match, _ := path.Match(allowed, origin); match {
+			return true
+		}
+	}
+
+	return false
 }
 
 // ApplyDefaults returns a new config with any zero field in config, set to the default value.
