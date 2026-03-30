@@ -30,10 +30,10 @@ fsevents@2.3.2:
   resolved "https://registry.yarnpkg.com/fsevents/-/fsevents-2.3.2.tgz#8a526f78b8fdf4623b709e0b975c52c24c02fd1a"
   integrity sha512-xiqMQR4xAeHTuB9uWm+fFRcIOgKBMiOBP+eXiyT7jsgVCq1bkVygt00oASowB7EdtpOHaaPgKt812P9ab+DDKA==
 
-npm-check-updates@19.6.5:
-  version "19.6.5"
-  resolved "https://registry.yarnpkg.com/npm-check-updates/-/npm-check-updates-19.6.5.tgz#ed3a79c6857d66951d0dbe275368f6d337d80c1f"
-  integrity sha512-XlBUMC30relXfEerrnX239W9iB30U6Woz0Hj42Sv6iSF4EGOvj2mS2r45sZ3RglH0VPBxXOWooMxObZ/SMZhrw==
+npm-check-updates@19.6.6:
+  version "19.6.6"
+  resolved "https://registry.yarnpkg.com/npm-check-updates/-/npm-check-updates-19.6.6.tgz#57f6a8824b6a99e6ce48149d33fc92d037d7789b"
+  integrity sha512-AvlRcnlUEyBEJfblUSjYMJwYKvCIWDRuCDa6x3hyUMTMkI3kslmFm0LDqwgzQfshfNh0Z3ouKiA4fLjRN7HejQ==
 
 playwright-core@1.58.2:
   version "1.58.2"
