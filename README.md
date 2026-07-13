@@ -54,7 +54,7 @@ All three domain names should be configured in main.go (find the prodConfig var)
 
 ## Deployment
 
-Deployment to Google App Engine is carried out by a [Github Action](.github/workflows/deploy.yml) - but to do it manually.
+Deployment to Google App Engine is carried out by a [Github Action](.github/workflows/deploy.yml) whenever a new commit is pushed to `main` - but to do it manually.
 
 ```shell
 make stage  # Deploys to a new version but does NOT promote it (useful for testing)
