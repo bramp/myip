@@ -5,7 +5,7 @@
   "repository": "https://github.com/bramp/myip",
   "license": "Apache-2.0",
   "devDependencies": {
-    "@playwright/test": "^1.61.1",
+    "@playwright/test": "^1.62.0",
     "npm-check-updates": "22.2.9",
     "playwright": "^1.61.1"
   },
