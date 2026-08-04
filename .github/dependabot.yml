@@ -9,6 +9,11 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    groups:
+      playwright:
+        patterns:
+          - "playwright"
+          - "@playwright/test"
 
   - package-ecosystem: "github-actions"
     directory: "/"
