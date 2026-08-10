@@ -6,7 +6,7 @@
   "license": "Apache-2.0",
   "devDependencies": {
     "@playwright/test": "^1.62.1",
-    "npm-check-updates": "23.0.0",
+    "npm-check-updates": "23.0.2",
     "playwright": "^1.62.1"
   },
   "dependencies": {
