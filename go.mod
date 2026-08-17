@@ -9,7 +9,7 @@ require (
 	github.com/gorilla/mux v1.8.1
 	github.com/kylelemons/godebug v1.1.0
 	github.com/openrdap/rdap v0.10.1
-	github.com/sirupsen/logrus v1.9.4
+	github.com/sirupsen/logrus v1.10.0
 	github.com/ua-parser/uap-go v0.0.0-20251207011819-db9adb27a0b8
 	github.com/unrolled/secure v1.17.0
 	google.golang.org/appengine v1.6.8
