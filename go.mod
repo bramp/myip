@@ -1,6 +1,6 @@
 module bramp.net/myip
 
-go 1.26
+go 1.26.0
 
 require (
 	cloud.google.com/go/secretmanager v1.21.0
@@ -8,7 +8,7 @@ require (
 	github.com/gorilla/handlers v1.5.2
 	github.com/gorilla/mux v1.8.1
 	github.com/kylelemons/godebug v1.1.0
-	github.com/openrdap/rdap v0.10.1
+	github.com/openrdap/rdap v0.10.2
 	github.com/sirupsen/logrus v1.10.1
 	github.com/ua-parser/uap-go v0.0.0-20251207011819-db9adb27a0b8
 	github.com/unrolled/secure v1.17.0
@@ -44,7 +44,7 @@ require (
 	go.opentelemetry.io/otel v1.44.0 // indirect
 	go.opentelemetry.io/otel/metric v1.44.0 // indirect
 	go.opentelemetry.io/otel/trace v1.44.0 // indirect
-	golang.org/x/crypto v0.55.0 // indirect
+	golang.org/x/crypto v0.56.0 // indirect
 	golang.org/x/net v0.58.0 // indirect
 	golang.org/x/oauth2 v0.36.0 // indirect
 	golang.org/x/sync v0.22.0 // indirect
