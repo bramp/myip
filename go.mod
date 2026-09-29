@@ -1,9 +1,9 @@
 module bramp.net/myip
 
-go 1.26
+go 1.26.0
 
 require (
-	cloud.google.com/go/secretmanager v1.21.0
+	cloud.google.com/go/secretmanager v1.22.0
 	github.com/domainr/whois v0.1.0
 	github.com/gorilla/handlers v1.5.2
 	github.com/gorilla/mux v1.8.1
