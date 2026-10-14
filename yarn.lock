@@ -25,10 +25,10 @@
   dependencies:
     playwright "1.63.0"
 
-npm-check-updates@23.1.0:
-  version "23.1.0"
-  resolved "https://registry.yarnpkg.com/npm-check-updates/-/npm-check-updates-23.1.0.tgz#fc4fc74cd1d3663185a0cc6c75cdd2992c7344bd"
-  integrity sha512-u6Odx/JDpDXNqXp5pPsVN0RhuWkNrBe4Sz26J7yWJcEadopKhQgcB+bFq2PK35iJY6vc6h1PbnXmnwfiOFQl/w==
+npm-check-updates@23.1.1:
+  version "23.1.1"
+  resolved "https://registry.yarnpkg.com/npm-check-updates/-/npm-check-updates-23.1.1.tgz#658512e19009bf386567878b7e6072ed3e01f48f"
+  integrity sha512-UzYDvvsQRkmXR59g9SqsQxygYp7AhFpfEcOOGOJaB/P7pF/XlaqIYLK3UjUGfMHH1+aS2nZvJRaIsk2nk0z5ag==
 
 playwright-core@1.63.0:
   version "1.63.0"
