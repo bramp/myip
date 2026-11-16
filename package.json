@@ -12,7 +12,7 @@
   "dependencies": {
     "@bower_components/angular": "angular/bower-angular#v1.8.3",
     "@bower_components/angular-bootstrap": "angular-ui/bootstrap-bower#2.5.x",
-    "@bower_components/bootstrap": "twbs/bootstrap#v5.3.8",
+    "@bower_components/bootstrap": "twbs/bootstrap#v5.3.9",
     "@bower_components/components-font-awesome": "components/font-awesome#6.5.2"
   },
   "engines": {
