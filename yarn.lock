@@ -10,9 +10,10 @@
   version "1.8.3"
   resolved "https://codeload.github.com/angular/bower-angular/tar.gz/142f3c4bc7d43b6de39581a0d886bbf97f8b62ef"
 
-"@bower_components/bootstrap@twbs/bootstrap#v5.3.8":
-  version "5.3.8"
-  resolved "https://codeload.github.com/twbs/bootstrap/tar.gz/25aa8cc0b32f0d1a54be575347e6d84b70b1acd7"
+"@bower_components/bootstrap@twbs/bootstrap#v5.3.9":
+  version "5.3.9"
+  uid "349bdb50b8ab6782248c1b296443087cd7222ead"
+  resolved "https://codeload.github.com/twbs/bootstrap/tar.gz/349bdb50b8ab6782248c1b296443087cd7222ead"
 
 "@bower_components/components-font-awesome@components/font-awesome#6.5.2":
   version "6.5.2"
